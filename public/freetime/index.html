@@ -886,9 +886,9 @@ function onGenerateClick(){
   }
 }
 
-/* Auth gate logic (hashing, remember-device, lock) now lives in shared /auth.js,
-   included via <script src="../auth.js"></script> above — so the whole staff
-   portal (this tool plus any future projects) shares one login. */
+/* Auth gate logic (hashing, remember-device, lock) now lives in shared auth.js,
+   loaded via a script tag above — so the whole staff portal (this tool plus
+   any future projects) shares one login. */
 
 document.getElementById('generateBtn').addEventListener('click', onGenerateClick);
 refreshCacheStatus();
