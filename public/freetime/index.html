@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Steamoji · Free-Time Idea Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0B2338;
+    --navy:#0E2A44;
+    --navy-card:#123356;
+    --navy-card-hi:#17436d;
+    --line-blue:#2F6690;
+    --line-blue-soft:#1E4A70;
+    --paper:#DCEEFB;
+    --ink:#F3F7FA;
+    --ink-muted:#8FB3CC;
+    --amber:#F5A93F;
+    --amber-deep:#C9821B;
+    --coral:#FF6B4A;
+    --cyan:#5FD0E0;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--navy) 1px, transparent 1px) 0 0/100% 28px,
+      linear-gradient(90deg, var(--navy) 1px, transparent 1px) 0 0/28px 100%,
+      var(--navy-deep);
+    background-color:var(--navy-deep);
+    background-image:
+      linear-gradient(rgba(47,102,144,0.14) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47,102,144,0.14) 1px, transparent 1px);
+    background-size:28px 28px;
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    padding:28px 20px 60px;
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--cyan);margin:0 0 6px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow .dot{width:6px;height:6px;background:var(--amber);border-radius:50%;display:inline-block;}
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:clamp(28px,4vw,42px);
+    margin:0 0 6px;letter-spacing:-0.01em;
+  }
+  .sub{color:var(--ink-muted);font-size:14.5px;max-width:640px;line-height:1.5;margin:0 0 30px;}
+
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media (max-width:880px){.grid{grid-template-columns:1fr;}}
+
+  .panel{
+    background:var(--navy-card);
+    border:1px solid var(--line-blue-soft);
+    border-radius:var(--radius);
+    padding:20px;
+    position:relative;
+  }
+  .panel:before{
+    content:"";position:absolute;top:8px;left:8px;right:8px;bottom:8px;
+    border:1px dashed rgba(143,179,204,0.25);pointer-events:none;
+  }
+  .field{margin-bottom:22px;}
+  .field:last-child{margin-bottom:0;}
+  .field-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-muted);margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:baseline;
+  }
+  .field-label span.readout{color:var(--amber);font-weight:600;}
+
+  .pillar-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .pillar-btn{
+    background:var(--navy);
+    border:1px solid var(--line-blue-soft);
+    color:var(--ink);
+    border-radius:var(--radius);
+    padding:10px 8px;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;
+    transition:border-color .15s, background .15s, transform .1s;
+  }
+  .pillar-btn svg{width:22px;height:22px;stroke:var(--ink-muted);fill:none;stroke-width:1.6;}
+  .pillar-btn:hover{border-color:var(--line-blue);}
+  .pillar-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+  .pillar-btn.active{
+    background:rgba(245,169,63,0.12);
+    border-color:var(--amber);
+  }
+  .pillar-btn.active svg{stroke:var(--amber);}
+  .pillar-btn.active{color:var(--amber);}
+
+  input[type=range]{
+    -webkit-appearance:none;width:100%;height:4px;
+    background:linear-gradient(90deg,var(--amber) 0%,var(--amber) var(--fill,50%),var(--line-blue-soft) var(--fill,50%));
+    border-radius:2px;outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--amber);border:2px solid var(--navy-deep);cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%;background:var(--amber);border:2px solid var(--navy-deep);cursor:pointer;
+  }
+  .ticklabels{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-muted);margin-top:8px;}
+  .band-name{font-size:12.5px;color:var(--paper);margin-top:6px;}
+
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    background:var(--navy);border:1px solid var(--line-blue-soft);color:var(--ink-muted);
+    font-family:'IBM Plex Mono',monospace;font-size:12px;
+    padding:7px 12px;border-radius:20px;cursor:pointer;
+  }
+  .chip:hover{border-color:var(--line-blue);}
+  .chip.active{background:rgba(245,169,63,0.14);border-color:var(--amber);color:var(--amber);}
+  .custom-min{
+    margin-top:10px;display:flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-muted);
+  }
+  .custom-min input{
+    width:64px;background:var(--navy);border:1px solid var(--line-blue-soft);color:var(--ink);
+    border-radius:var(--radius);padding:6px 8px;font-family:'IBM Plex Mono',monospace;
+  }
+
+  .text-field{
+    width:100%;background:var(--navy);border:1px solid var(--line-blue-soft);color:var(--ink);
+    border-radius:var(--radius);padding:10px 11px;font-family:'Inter',sans-serif;font-size:13px;
+  }
+  .text-field::placeholder{color:var(--ink-muted);opacity:.75;}
+  .text-field:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+  .field-hint{font-size:11px;color:var(--ink-muted);margin-top:6px;line-height:1.4;}
+
+  .context-bar{
+    display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;
+  }
+  .context-chip{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--paper);
+    background:var(--navy-card-hi);border:1px solid var(--line-blue);
+    padding:6px 11px;border-radius:20px;
+  }
+  .context-chip b{color:var(--cyan);font-weight:600;}
+
+  .loading-state{
+    border:1px dashed var(--line-blue-soft);border-radius:var(--radius);
+    padding:44px 24px;text-align:center;color:var(--ink-muted);font-size:13.5px;
+  }
+  .loading-state .spinner{
+    width:26px;height:26px;margin:0 auto 16px;border-radius:50%;
+    border:2.5px solid var(--line-blue-soft);border-top-color:var(--amber);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-state strong{color:var(--paper);display:block;font-family:'Space Grotesk',sans-serif;font-size:15px;margin-bottom:6px;font-weight:600;}
+  .error-note{
+    border:1px solid rgba(255,107,74,0.4);background:rgba(255,107,74,0.08);
+    border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--coral);line-height:1.5;
+  }
+  .mode-toggle{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-muted);
+    margin-top:8px;letter-spacing:.04em;
+  }
+  .mode-toggle b{color:var(--cyan);}
+
+  .cache-status{
+    margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);
+  }
+  .cache-status a{color:var(--cyan);text-decoration:none;cursor:pointer;}
+  .cache-status a:hover{text-decoration:underline;}
+  .badge.cached{background:rgba(95,208,224,0.15);color:var(--cyan);border:1px solid rgba(95,208,224,0.4);}
+
+  .cache-panel{
+    display:none;margin-top:10px;border:1px solid var(--line-blue-soft);border-radius:var(--radius);
+    max-height:220px;overflow-y:auto;background:var(--navy-card);
+  }
+  .cache-row{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:9px 12px;border-bottom:1px solid var(--line-blue-soft);
+  }
+  .cache-row:last-child{border-bottom:none;}
+  .cache-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);line-height:1.4;}
+  .cache-del{
+    flex-shrink:0;background:transparent;border:1px solid var(--line-blue-soft);color:var(--coral);
+    width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+  }
+  body.locked .wrap{display:none;}
+
+  .auth-gate{
+    position:fixed;inset:0;z-index:999;
+    display:flex;align-items:center;justify-content:center;
+    background:
+      linear-gradient(rgba(47,102,144,0.14) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47,102,144,0.14) 1px, transparent 1px);
+    background-size:28px 28px;background-color:var(--navy-deep);
+    padding:20px;
+  }
+  body:not(.locked) .auth-gate{display:none;}
+  .auth-card{
+    width:100%;max-width:360px;background:var(--navy-card);
+    border:1px solid var(--line-blue-soft);border-radius:var(--radius);
+    padding:28px 26px;position:relative;
+  }
+  .auth-card .corner{position:absolute;width:12px;height:12px;}
+  .auth-eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--cyan);margin:0 0 10px;display:flex;align-items:center;gap:8px;
+  }
+  .auth-eyebrow .dot{width:6px;height:6px;background:var(--amber);border-radius:50%;}
+  .auth-card h2{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0 0 8px;font-weight:600;color:var(--paper);}
+  .auth-card p.sub{color:var(--ink-muted);font-size:13px;line-height:1.5;margin:0 0 20px;}
+  .auth-card input[type=password]{
+    width:100%;background:var(--navy);border:1px solid var(--line-blue-soft);color:var(--ink);
+    border-radius:var(--radius);padding:11px 12px;font-family:'Inter',sans-serif;font-size:14px;margin-bottom:12px;
+  }
+  .auth-card input[type=password]:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+  .auth-remember{
+    display:flex;align-items:center;gap:8px;margin-bottom:16px;
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-muted);
+  }
+  .auth-submit{
+    width:100%;background:var(--amber);color:var(--navy-deep);border:none;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;
+    padding:12px;border-radius:var(--radius);cursor:pointer;
+  }
+  .auth-submit:hover{background:#ffb84f;}
+  .auth-error{
+    display:none;color:var(--coral);font-family:'IBM Plex Mono',monospace;font-size:11.5px;
+    margin-top:12px;padding:9px 11px;border:1px solid rgba(255,107,74,0.4);
+    background:rgba(255,107,74,0.08);border-radius:var(--radius);
+  }
+  .lock-link{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);
+    cursor:pointer;text-decoration:none;margin-left:auto;
+  }
+  .lock-link:hover{color:var(--cyan);}
+
+  .ratio-note{
+    margin-top:6px;font-size:11.5px;color:var(--ink-muted);
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  .generate-btn{
+    margin-top:26px;width:100%;
+    background:var(--amber);color:var(--navy-deep);border:none;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;
+    padding:14px;border-radius:var(--radius);cursor:pointer;
+    letter-spacing:.01em;
+    transition:transform .1s, background .15s;
+  }
+  .generate-btn:hover{background:#ffb84f;}
+  .generate-btn:active{transform:scale(0.98);}
+  .generate-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;}
+
+  .reroll-btn{
+    margin-top:10px;width:100%;background:transparent;color:var(--ink-muted);
+    border:1px solid var(--line-blue-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;
+    padding:10px;border-radius:var(--radius);cursor:pointer;
+  }
+  .reroll-btn:hover{border-color:var(--line-blue);color:var(--ink);}
+
+  .output-head{
+    display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;gap:8px;
+  }
+  .output-head h2{
+    font-family:'Space Grotesk',sans-serif;font-size:18px;margin:0;font-weight:600;
+  }
+  .output-head .meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);}
+
+  .empty-state{
+    border:1px dashed var(--line-blue-soft);border-radius:var(--radius);
+    padding:50px 24px;text-align:center;color:var(--ink-muted);font-size:13.5px;
+  }
+  .empty-state strong{color:var(--paper);display:block;font-family:'Space Grotesk',sans-serif;font-size:16px;margin-bottom:8px;font-weight:600;}
+
+  .cards{display:grid;grid-template-columns:1fr;gap:16px;}
+  @media (min-width:720px){.cards{grid-template-columns:1fr 1fr;}}
+
+  .card{
+    position:relative;
+    background:var(--navy-card);
+    border:1px solid var(--line-blue-soft);
+    padding:20px 18px 18px;
+    border-radius:var(--radius);
+    animation:rise .35s ease both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .corner{position:absolute;width:12px;height:12px;border-color:var(--line-blue);}
+  .corner.tl{top:6px;left:6px;border-top:1.5px solid var(--line-blue);border-left:1.5px solid var(--line-blue);}
+  .corner.tr{top:6px;right:6px;border-top:1.5px solid var(--line-blue);border-right:1.5px solid var(--line-blue);}
+  .corner.bl{bottom:6px;left:6px;border-bottom:1.5px solid var(--line-blue);border-left:1.5px solid var(--line-blue);}
+  .corner.br{bottom:6px;right:6px;border-bottom:1.5px solid var(--line-blue);border-right:1.5px solid var(--line-blue);}
+
+  .badge{
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;padding:4px 8px;border-radius:20px;margin-bottom:10px;
+  }
+  .badge.deepen{background:rgba(245,169,63,0.15);color:var(--amber);border:1px solid rgba(245,169,63,0.4);}
+  .badge.cross{background:rgba(255,107,74,0.15);color:var(--coral);border:1px solid rgba(255,107,74,0.4);}
+  .badge.bonus{background:rgba(95,208,224,0.15);color:var(--cyan);border:1px solid rgba(95,208,224,0.4);}
+
+  .card h3{font-family:'Space Grotesk',sans-serif;font-size:18px;margin:0 0 12px;font-weight:600;color:var(--paper);}
+  .kv{margin-bottom:11px;}
+  .kv .num{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-muted);
+    letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;
+  }
+  .kv .val{font-size:13.5px;line-height:1.48;color:var(--ink);}
+  .kv .val.muted{color:var(--ink-muted);}
+  .coach-list{margin:0;padding-left:16px;font-size:13.5px;line-height:1.5;}
+  .coach-list li{margin-bottom:3px;}
+
+  .footer-note{
+    margin-top:34px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);
+    border-top:1px dashed var(--line-blue-soft);padding-top:14px;line-height:1.6;
+  }
+</style>
+</head>
+<body class="locked">
+<script src="../auth.js"></script>
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <span class="corner tl" style="top:6px;left:6px;border-top:1.5px solid var(--line-blue);border-left:1.5px solid var(--line-blue);"></span>
+    <span class="corner tr" style="top:6px;right:6px;border-top:1.5px solid var(--line-blue);border-right:1.5px solid var(--line-blue);"></span>
+    <span class="corner bl" style="bottom:6px;left:6px;border-bottom:1.5px solid var(--line-blue);border-left:1.5px solid var(--line-blue);"></span>
+    <span class="corner br" style="bottom:6px;right:6px;border-bottom:1.5px solid var(--line-blue);border-right:1.5px solid var(--line-blue);"></span>
+    <p class="auth-eyebrow"><span class="dot"></span>STEAMOJI · STAFF ACCESS</p>
+    <h2>Enter Passphrase</h2>
+    <p class="sub">This tool is for Steamoji facilitators only. Ask your director for the current passphrase.</p>
+    <input type="password" id="authPassword" placeholder="Passphrase" autocomplete="off">
+    <label class="auth-remember"><input type="checkbox" id="authRemember" checked> Remember this device</label>
+    <button class="auth-submit" id="authSubmit">Enter</button>
+    <div class="auth-error" id="authError">That passphrase didn't match. Try again.</div>
+  </div>
+</div>
+<div class="wrap">
+  <p class="eyebrow"><span class="dot"></span>STEAMOJI · FACILITATOR TOOL<span class="lock-link" id="lockLink">🔒 Lock</span></p>
+  <h1>Free-Time Idea Engine</h1>
+  <p class="sub">Set today's pillar, the maker's age and level, and time left on the clock — get 2–3 open-ended challenge cards to hand over, never a step-by-step answer.</p>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="field">
+        <div class="field-label">Today's Directed Pillar</div>
+        <div class="pillar-grid" id="pillarGrid"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Age <span class="readout" id="ageReadout">9</span></div>
+        <input type="range" id="ageSlider" min="6" max="14" value="9" step="1">
+        <div class="ticklabels"><span>6</span><span>10</span><span>14</span></div>
+        <div class="band-name" id="bandName">Builder tier</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Achievement Level <span class="readout" id="levelReadout">5</span></div>
+        <input type="range" id="levelSlider" min="1" max="10" value="5" step="1">
+        <div class="ticklabels"><span>Tinkerer</span><span>Builder</span><span>Master</span></div>
+        <div class="ratio-note" id="ratioNote"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Minutes Left</div>
+        <div class="chip-row" id="minuteChips"></div>
+        <div class="custom-min">
+          custom: <input type="number" id="customMin" min="5" max="120" value="30"> min
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Technologies Learned Today</div>
+        <input type="text" class="text-field" id="techInput" placeholder="e.g. 3D printer, CAD software, micro:bit">
+        <div class="field-hint">Tools or tech the maker used in today's directed session.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Concept Learned Today</div>
+        <input type="text" class="text-field" id="conceptInput" placeholder="e.g. structural triangulation, if/then logic">
+        <div class="field-hint">The core idea to carry into free time — every card will ask them to bring it back.</div>
+      </div>
+
+      <button class="generate-btn" id="generateBtn">Generate Ideas</button>
+      <div class="mode-toggle" id="modeToggle">Add a tool or concept above to switch to <b>live-generated</b> ideas.</div>
+      <button class="reroll-btn" id="rerollBtn" style="display:none;">↻ Reroll bonus card</button>
+    </div>
+
+    <div>
+      <div class="output-head">
+        <h2>Suggested Challenges</h2>
+        <span class="meta" id="outputMeta"></span>
+      </div>
+      <div id="outputArea">
+        <div class="empty-state">
+          <strong>No ideas generated yet</strong>
+          Set the dials on the left, then press Generate Ideas.
+        </div>
+      </div>
+      <div class="footer-note" id="footerNote"></div>
+      <div class="cache-status" id="cacheStatus"></div>
+      <div class="cache-panel" id="cachePanel"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Pillar icons (simple line-drawn, blueprint style) ---------- */
+const ICONS = {
+  FAB: '<svg viewBox="0 0 24 24"><path d="M14 6l4 4-8 8H6v-4l8-8z"/><path d="M13 7l4 4"/></svg>',
+  PC:  '<svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>',
+  ENG: '<svg viewBox="0 0 24 24"><path d="M4 19h16M6 19V9l6-5 6 5v10"/><path d="M6 19v-6h12v6"/></svg>',
+  ART: '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c1.5 0 1.7-1.2.9-1.9-.7-.6-.4-1.6.6-1.6H15a5 5 0 0 0 5-5 8 8 0 0 0-8-9.5z"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="8" r="1"/><circle cx="16" cy="11" r="1"/></svg>'
+};
+const PILLAR_LABEL = {FAB:'Fabrication', PC:'Physical Computing', ENG:'Engineering', ART:'Digital Arts'};
+
+/* ---------- Prompt bank ---------- */
+/* mode: D deepen, C cross, W wildcard. age: E 6-8, B 9-11, I 12-14. size: S <=20min, L >20min */
+const BANK = [
+// FAB deepen
+{id:'FAB-D-E-S',mode:'D',pillar:'FAB',age:'E',size:'S',t:'Build a Home',ch:"Your build's job was to hold shape today. Make a tiny house or shelter for a toy or bug.",co:'Use only what\u2019s in your bin — no glue gun.',c1:'What part might fall over first?',c2:'How did you make it stand up?',lv:'Add a door that actually opens.',sig:'Kid tests stability by touch and adjusts the base.'},
+{id:'FAB-D-E-L',mode:'D',pillar:'FAB',age:'E',size:'L',t:'Fix-It Shop',ch:"Something you built earlier just \u201cbroke.\u201d Reopen the fix-it shop and repair it — stronger than before.",co:'It has to survive a gentle push test.',c1:'What made it wobbly?',c2:'What\u2019s holding it together now?',lv:'Add a second broken thing to fix.',sig:'Kid identifies a specific failure cause, not just rebuilds blindly.'},
+{id:'FAB-D-B-S',mode:'D',pillar:'FAB',age:'B',size:'S',t:'Redesign Brief',ch:"A client wants today\u2019s build made 20% bigger without falling apart.",co:'Change the shape, not the amount of material.',c1:'Where\u2019s the weak point?',c2:'What shape resists bending best?',lv:'Make it collapsible for shipping.',sig:'Kid points to a specific structural reason for their change.'},
+{id:'FAB-D-B-L',mode:'D',pillar:'FAB',age:'B',size:'L',t:'Prototype v2',ch:'Build a second version of today\u2019s project that fixes its biggest flaw.',co:'Keep the same footprint or size.',c1:'What would a real customer complain about?',c2:'What\u2019s one thing you\u2019d never do again?',lv:'Write 3 bullet \u201cupgrade notes,\u201d like a real changelog.',sig:'Kid can name the flaw before rebuilding, not just tinker randomly.'},
+{id:'FAB-D-I-S',mode:'D',pillar:'FAB',age:'I',size:'S',t:'Cut the Cost',ch:'Redesign today\u2019s build using half the material, at the same strength.',co:'Track how many pieces you removed.',c1:'What\u2019s structural vs. decorative?',c2:'',lv:'Estimate the material cost saved.',sig:'Kid can justify every piece that stayed.'},
+{id:'FAB-D-I-L',mode:'D',pillar:'FAB',age:'I',size:'L',t:'Client Pitch Build',ch:'Build a version of today\u2019s project for a specific customer you invent — a camper, a small business, a younger kid.',co:'It must solve one real need for that customer.',c1:'What does your customer actually need vs. want?',c2:'What\u2019s your one differentiator?',lv:'Write a one-sentence pitch for it.',sig:'Design choices trace back to the customer, not just \u201clooks cool.\u201d'},
+// FAB cross
+{id:'FAB-C-E-S',mode:'C',pillar:'FAB',to:'ART',age:'E',size:'S',t:"Draw Its Story",ch:'Draw a comic showing what your build \u201cdoes\u201d all day.',co:'3 panels only.',c1:'What\u2019s it thinking?',c2:'',lv:'Give it a name and a catchphrase.',sig:'Kid connects the drawing back to the actual build.'},
+{id:'FAB-C-E-L',mode:'C',pillar:'FAB',to:'ENG',age:'E',size:'L',t:'Weight Test Lab',ch:'Turn your build into a test — how many blocks or coins can it hold before it tips or bends?',co:'Add weight one piece at a time, no cheating.',c1:'What happened right before it failed?',c2:'',lv:'Try one change and re-test.',sig:'Kid notices the moment of failure, not just the final collapse.'},
+{id:'FAB-C-B-S',mode:'C',pillar:'FAB',to:'PC',age:'B',size:'S',t:'Give It a Signal',ch:'Sketch or add a light, buzzer, or sensor that would warn when your build is overloaded or tipping.',co:'One input, one output only.',c1:'What would it need to sense?',c2:'',lv:'Sketch the wiring.',sig:'Kid can explain the trigger condition in plain words.'},
+{id:'FAB-C-B-L',mode:'C',pillar:'FAB',to:'ENG',age:'B',size:'L',t:'Stress Test Report',ch:'Engineer-test your build to find its breaking point, then redesign one part to fix the weakness.',co:'Test twice: before and after the fix.',c1:'What\u2019s your hypothesis before you test?',c2:'',lv:'Write a one-line lab report: what failed, what you changed.',sig:'Kid predicts before testing, then compares to what happened.'},
+{id:'FAB-C-I-S',mode:'C',pillar:'FAB',to:'ART',age:'I',size:'S',t:'Product Render',ch:'Design packaging or a marketing image for your build, as if it were a product on a shelf.',co:'Must include a name and a tagline.',c1:'What makes it stand out on a shelf?',c2:'',lv:'Add a target price.',sig:'Kid articulates one differentiator, not just decoration.'},
+{id:'FAB-C-I-L',mode:'C',pillar:'FAB',to:'PC',age:'I',size:'L',t:'Smart Upgrade',ch:'Design (and build if parts allow) a way to add one sensor plus one automated response, turning your build from static to \u201csmart.\u201d',co:'Must solve a real problem it currently has.',c1:'What decision should it make on its own?',c2:'',lv:'Explain the logic as an if/then statement.',sig:'Kid can state the if/then logic clearly before building it.'},
+// PC deepen
+{id:'PC-D-E-S',mode:'D',pillar:'PC',age:'E',size:'S',t:'New Trick',ch:'Teach your circuit or robot one new trick using only the parts it already has.',co:'No new parts allowed.',c1:'What happens if you change the order?',c2:'',lv:'Combine two tricks into one.',sig:'Kid experiments with sequence/order, not just random button presses.'},
+{id:'PC-D-E-L',mode:'D',pillar:'PC',age:'E',size:'L',t:'Robot Pet',ch:'Turn today\u2019s build into a \u201cpet\u201d with a personality — happy, sleepy, alert.',co:'It must react to at least one thing you do.',c1:'How does your pet show it\u2019s happy?',c2:'',lv:'Give it a second mood.',sig:'Kid maps a specific behavior to a specific feeling.'},
+{id:'PC-D-B-S',mode:'D',pillar:'PC',age:'B',size:'S',t:'Add a Sense',ch:'Add one new sensor input to today\u2019s build and make it change behavior because of it.',co:'Only one new part.',c1:'What should trigger the change?',c2:'',lv:'Add a threshold — e.g., only if it\u2019s really close.',sig:'Kid can state cause and effect clearly.'},
+{id:'PC-D-B-L',mode:'D',pillar:'PC',age:'B',size:'L',t:'Debug Challenge',ch:'Break one part of your code or circuit on purpose, swap with a partner, and fix theirs.',co:'You can\u2019t ask what they changed — find it yourself.',c1:'What\u2019s the first thing you\u2019d test?',c2:'',lv:'Explain the bug out loud before fixing it.',sig:'Kid narrates a hypothesis before poking at the code.'},
+{id:'PC-D-I-S',mode:'D',pillar:'PC',age:'I',size:'S',t:'Feature Pitch',ch:'Add one new feature that would make today\u2019s build \u201csellable,\u201d then explain why a user would want it.',co:'Must be buildable in the time left.',c1:'What problem does this feature solve?',c2:'',lv:'Name your product and its one headline feature.',sig:'Kid frames the feature around a user need, not novelty alone.'},
+{id:'PC-D-I-L',mode:'D',pillar:'PC',age:'I',size:'L',t:'Automate It',ch:'Combine two behaviors from today into one automated sequence that runs without you touching it.',co:'Must have a clear start and stop condition.',c1:'What\u2019s your trigger? What\u2019s your exit condition?',c2:'',lv:'Add a fail-safe for when something goes wrong.',sig:'Kid can state both the trigger and the stop condition.'},
+// PC cross
+{id:'PC-C-E-S',mode:'C',pillar:'PC',to:'ART',age:'E',size:'S',t:'Character Circuit',ch:'Turn your circuit into a character — draw a face or body around it.',co:'The face has to match what the light or sound does.',c1:'Does it look happy when it blinks?',c2:'',lv:'Give it a name.',sig:'Kid links a visual choice to an actual circuit behavior.'},
+{id:'PC-C-E-L',mode:'C',pillar:'PC',to:'FAB',age:'E',size:'L',t:'Build It a House',ch:'Fabricate a small case or home for your circuit or robot.',co:'Has to fit and still let it work.',c1:'How will you reach the battery or switch?',c2:'',lv:'Add a door or window.',sig:'Kid designs around access, not just looks.'},
+{id:'PC-C-B-S',mode:'C',pillar:'PC',to:'ENG',age:'B',size:'S',t:'Structural Sensor',ch:'Imagine adding a sensor to an earlier structure that would warn if it\u2019s about to fail.',co:'Describe exactly what it measures.',c1:'What\u2019s the earliest warning sign of failure?',c2:'',lv:'Sketch where you\u2019d mount it.',sig:'Kid identifies a real pre-failure signal, not a random guess.'},
+{id:'PC-C-B-L',mode:'C',pillar:'PC',to:'ART',age:'B',size:'L',t:'Animate the Data',ch:'Take what your sensor or circuit reads and design a simple animation or drawing that changes with it.',co:'At least 2 different states.',c1:'What visual shows \u201cmore\u201d vs. \u201cless\u201d?',c2:'',lv:'Add a third state.',sig:'Kid maps data changes to visual changes deliberately.'},
+{id:'PC-C-I-S',mode:'C',pillar:'PC',to:'ENG',age:'I',size:'S',t:'Reliability Check',ch:'Test your circuit\u2019s behavior — does it work the same every single time? Find one failure case.',co:'Run it at least 5 times.',c1:'What changes between runs?',c2:'',lv:'Propose a fix for the inconsistency.',sig:'Kid tests repeatedly instead of trusting one run.'},
+{id:'PC-C-I-L',mode:'C',pillar:'PC',to:'ART',age:'I',size:'L',t:'Interactive Pitch',ch:'Design a short interactive demo (video, slides, or live) pitching your build to investors.',co:'60 seconds max.',c1:'What\u2019s the \u201cwow\u201d moment in your demo?',c2:'',lv:'Add one number or stat to back your pitch.',sig:'Kid can identify the single strongest moment to lead with.'},
+// ENG deepen
+{id:'ENG-D-E-S',mode:'D',pillar:'ENG',age:'E',size:'S',t:'Double Strong',ch:'Rebuild today\u2019s structure so it can hold one more toy or object than before.',co:'Same size base.',c1:'What part felt shakiest?',c2:'',lv:'Test with a gentle push too.',sig:'Kid targets the shaky part specifically, not the whole build.'},
+{id:'ENG-D-E-L',mode:'D',pillar:'ENG',age:'E',size:'L',t:'Bridge It',ch:'Turn today\u2019s idea into a bridge between two chairs or blocks that a small toy can cross.',co:'Nothing touches the ground in the middle.',c1:'What shape holds weight best?',c2:'',lv:'See how many toys can cross before it sags.',sig:'Kid tries more than one shape before settling.'},
+{id:'ENG-D-B-S',mode:'D',pillar:'ENG',age:'B',size:'S',t:'Weak Point Hunt',ch:'Find and fix the single weakest point in today\u2019s structure.',co:'Only change that one spot.',c1:'How do you know it\u2019s the weakest point?',c2:'',lv:'Predict where the next weak point will be.',sig:'Kid gives evidence, not just a guess, for the weak point.'},
+{id:'ENG-D-B-L',mode:'D',pillar:'ENG',age:'B',size:'L',t:'Redesign Under Constraint',ch:'Rebuild using 30% fewer pieces but keep — or improve — the strength.',co:'Count pieces before and after.',c1:'What was doing the least work?',c2:'',lv:'Chart pieces vs. strength.',sig:'Kid can point to a piece that wasn\u2019t pulling its weight.'},
+{id:'ENG-D-I-S',mode:'D',pillar:'ENG',age:'I',size:'S',t:'Load Rating',ch:'Find today\u2019s structure\u2019s actual max load and write a one-line spec sheet for it.',co:'Test to failure once.',c1:'How would a real engineer report this safely?',c2:'',lv:'Add a safety margin recommendation.',sig:'Kid distinguishes tested capacity from a safe rated capacity.'},
+{id:'ENG-D-I-L',mode:'D',pillar:'ENG',age:'I',size:'L',t:'Optimize for Cost',ch:'Redesign to hit the same strength using the cheapest combination of pieces you can justify.',co:'Must show your reasoning.',c1:'What\u2019s overbuilt? What\u2019s essential?',c2:'',lv:'Pitch your redesign as a cost-savings win.',sig:'Kid separates \u201cessential\u201d from \u201cnice to have\u201d with reasons.'},
+// ENG cross
+{id:'ENG-C-E-S',mode:'C',pillar:'ENG',to:'PC',age:'E',size:'S',t:'Alarm It',ch:'Imagine a simple noisemaker that goes off if your structure tips.',co:'Describe how it would know.',c1:'What would trigger the alarm?',c2:'',lv:'Sketch where it goes.',sig:'Kid names a specific trigger moment.'},
+{id:'ENG-C-E-L',mode:'C',pillar:'ENG',to:'ART',age:'E',size:'L',t:'Structure Story',ch:'Draw a poster showing your structure \u201cat work\u201d — holding a roof, crossing a river.',co:'Include at least 2 real details from the build.',c1:'What job is it doing in the picture?',c2:'',lv:'Add a title.',sig:'Drawing reflects real features of the actual build.'},
+{id:'ENG-C-B-S',mode:'C',pillar:'ENG',to:'FAB',age:'B',size:'S',t:'Model Upgrade',ch:'Fabricate one new part, in a different material, that would make today\u2019s structure stronger or lighter.',co:'Only one new piece.',c1:'Why this material for this job?',c2:'',lv:'Compare weight before and after.',sig:'Kid gives a material-specific reason, not just \u201cit looks strong.\u201d'},
+{id:'ENG-C-B-L',mode:'C',pillar:'ENG',to:'ART',age:'B',size:'L',t:'Blueprint It',ch:'Create a clean, labeled diagram of today\u2019s structure, like a real engineer would.',co:'Must be legible to someone who\u2019s never seen it.',c1:'What would someone need to know to rebuild this?',c2:'',lv:'Add a materials list.',sig:'A stranger could roughly follow the diagram.'},
+{id:'ENG-C-I-S',mode:'C',pillar:'ENG',to:'PC',age:'I',size:'S',t:'Smart Structure',ch:'Design where you\u2019d place one sensor on today\u2019s structure to monitor its health in real use.',co:'Justify the exact placement.',c1:'What failure mode are you watching for?',c2:'',lv:'Describe what data it would send and to whom.',sig:'Placement is tied to a specific failure mode, not guesswork.'},
+{id:'ENG-C-I-L',mode:'C',pillar:'ENG',to:'ART',age:'I',size:'L',t:'Investor Deck Slide',ch:'Design one polished slide that would sell your structure\u2019s design to a client or investor.',co:'Must include one real number — cost, strength, or weight.',c1:'What\u2019s the one stat that sells this?',c2:'',lv:'Add a competitor comparison.',sig:'Kid picks a number that\u2019s actually persuasive, not just any number.'},
+// ART deepen
+{id:'ART-D-E-S',mode:'D',pillar:'ART',age:'E',size:'S',t:'New Ending',ch:'Give your character or animation from today a brand new ending pose or action.',co:'No new characters — just new action.',c1:'What\u2019s the character feeling at the end?',c2:'',lv:'Add a sound effect word — POW! WHOOSH!',sig:'Kid connects the new pose to an emotion.'},
+{id:'ART-D-E-L',mode:'D',pillar:'ART',age:'E',size:'L',t:'Flipbook It',ch:'Turn your character into a tiny 3-frame animation of one simple action — jump, wave, blink.',co:'Exactly 3 frames.',c1:'What changes most between frames?',c2:'',lv:'Add a 4th frame.',sig:'Frames show clear, deliberate motion progression.'},
+{id:'ART-D-B-S',mode:'D',pillar:'ART',age:'B',size:'S',t:'Style Remix',ch:'Redraw or redesign today\u2019s character or scene in a totally different style — spooky, cartoon, retro.',co:'Keep it recognizable.',c1:'What one shape makes it \u201cthem\u201d?',c2:'',lv:'Do a second style remix.',sig:'Kid can name the one feature that must survive the remix.'},
+{id:'ART-D-B-L',mode:'D',pillar:'ART',age:'B',size:'L',t:'Mini Story',ch:'Build a 4–6 panel comic starring today\u2019s character solving a small problem.',co:'Clear beginning, middle, end.',c1:'What does your character want?',c2:'',lv:'Add a plot-twist panel.',sig:'Story has an actual want and resolution, not just images.'},
+{id:'ART-D-I-S',mode:'D',pillar:'ART',age:'I',size:'S',t:'Brand It',ch:'Design a simple logo or title card for today\u2019s project as if it were becoming a real show or game.',co:'2 colors max.',c1:'What feeling should the logo give in half a second?',c2:'',lv:'Add a tagline.',sig:'Kid can state the intended feeling before designing.'},
+{id:'ART-D-I-L',mode:'D',pillar:'ART',age:'I',size:'L',t:'Pitch Trailer',ch:'Storyboard a 15-second trailer for today\u2019s world, as if pitching it as a game or show.',co:'Exactly 4–5 shots.',c1:'What\u2019s the one moment that hooks someone?',c2:'',lv:'Write the trailer\u2019s one line of narration.',sig:'Kid identifies a single hook shot deliberately.'},
+// ART cross
+{id:'ART-C-E-S',mode:'C',pillar:'ART',to:'FAB',age:'E',size:'S',t:'Make It Real',ch:'Build a small physical version of your character or object using craft materials.',co:'Has to stand on its own.',c1:'What part is trickiest to make 3D?',c2:'',lv:'Give it a stand or base.',sig:'Kid solves the standing-up problem, not just the shape.'},
+{id:'ART-C-E-L',mode:'C',pillar:'ART',to:'PC',age:'E',size:'L',t:'Give It a Voice',ch:'Imagine a sound or light that plays when your character does its main action.',co:'Describe exactly when it happens.',c1:'What sound matches the action?',c2:'',lv:'Add a second sound for a second action.',sig:'Sound choice is tied to a specific moment, not random.'},
+{id:'ART-C-B-S',mode:'C',pillar:'ART',to:'ENG',age:'B',size:'S',t:'Structural Character',ch:'Design your character as if it needed to actually stand up and hold its own weight, like a statue.',co:'Identify the weakest point in your design.',c1:'Would this actually stand up in real life?',c2:'',lv:'Sketch the support structure.',sig:'Kid identifies a real physical weak point in the design.'},
+{id:'ART-C-B-L',mode:'C',pillar:'ART',to:'FAB',age:'B',size:'L',t:'3D It',ch:'Turn your 2D character or scene into a small 3D build or print.',co:'Pick the 3 most important features to keep.',c1:'What has to survive the jump to 3D?',c2:'',lv:'Add a moving part.',sig:'Kid makes deliberate trade-offs, not a rough copy.'},
+{id:'ART-C-I-S',mode:'C',pillar:'ART',to:'PC',age:'I',size:'S',t:'Interactive Character',ch:'Describe how your character would react differently to 3 sensor inputs — loud sound, light, motion.',co:'Each reaction must be different.',c1:'What personality trait explains each reaction?',c2:'',lv:'Pick which reaction is the \u201csignature\u201d one.',sig:'Each reaction is tied to a distinct personality reason.'},
+{id:'ART-C-I-L',mode:'C',pillar:'ART',to:'ENG',age:'I',size:'L',t:'World Blueprint',ch:'Design the engineering behind one structure, vehicle, or object your character\u2019s world depends on.',co:'Must be physically plausible.',c1:'What would break first if this were real?',c2:'',lv:'Add a materials or cost list for building it in real life.',sig:'Kid applies real structural reasoning, not just fantasy logic.'},
+];
+
+const WILDCARDS = [
+ {id:'W-E1',age:'E',t:'Show & Tell',ch:'Get ready to show off ONE thing today — practice explaining what it does, like you\u2019re the expert.',co:'3 sentences max.',c1:'What are you most proud of?',c2:'',lv:'',sig:'Kid can explain their build without prompting.'},
+ {id:'W-E2',age:'E',t:'Name Your Shop',ch:'If you sold what you built today, what would your shop be called? Design a little sign for it.',co:'Name + 1 picture only.',c1:'What would your shop\u2019s customers care about most?',c2:'',lv:'',sig:'Kid connects the name to what the build actually does.'},
+ {id:'W-B1',age:'B',t:'Elevator Pitch',ch:'Explain your project in 30 seconds to someone who\u2019s never seen it — go!',co:'No \u201cum.\u201d Start with what it does, not how.',c1:'What\u2019s the most exciting part to lead with?',c2:'',lv:'',sig:'Pitch opens with the payoff, not the process.'},
+ {id:'W-B2',age:'B',t:'Price It',ch:'If you sold what you built today, what would it cost, and why?',co:'Give one clear reason for your price.',c1:'What makes it worth that much?',c2:'',lv:'',sig:'Price is tied to a specific reason, not a random guess.'},
+ {id:'W-I1',age:'I',t:'Pitch Deck Slide',ch:'Make one polished slide or index card that could sell today\u2019s project to a stranger in 10 seconds.',co:'1 headline, 1 image or sketch, 1 number.',c1:'What\u2019s the headline that stops someone scrolling?',c2:'',lv:'',sig:'All three elements work together, not competing for attention.'},
+ {id:'W-I2',age:'I',t:'Find Your Competitor',ch:'Think of something that already exists and does something similar to your build. What\u2019s your one advantage over it?',co:'Name the \u201ccompetitor\u201d and your edge.',c1:'Why would someone pick yours instead?',c2:'',lv:'',sig:'Kid names a real, specific advantage — not just \u201cmine is better.\u201d'},
+];
+
+/* ---------- Caching (persistent storage) ---------- */
+function debounce(fn, delay){
+  let t;
+  return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); };
+}
+
+function cacheKey(){
+  const band = ageBand(state.age);
+  const size = state.minutes<=20 ? 'S' : 'L';
+  const tier = levelTier(state.level);
+  const tech = state.tech.toLowerCase().trim();
+  const concept = state.concept.toLowerCase().trim();
+  return 'q:'+state.pillar+'|'+band+'|'+size+'|'+tier+'|'+tech+'|'+concept;
+}
+
+async function getCachedResult(key){
+  try{
+    const res = await fetch(MOUNT_PREFIX+'/api/cache/'+encodeURIComponent(key));
+    if(!res.ok) return null;
+    const data = await res.json();
+    const parsed = JSON.parse(data.value);
+    return (parsed && Array.isArray(parsed.cards)) ? parsed : null;
+  }catch(e){
+    return null;
+  }
+}
+
+async function setCachedResult(key, cardsData){
+  try{
+    await fetch(MOUNT_PREFIX+'/api/cache', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ key, value: JSON.stringify({cards: cardsData, savedAt: Date.now()}) })
+    });
+    refreshCacheStatus();
+  }catch(e){
+    console.error('Could not save to cache', e);
+  }
+}
+
+function parseKeyLabel(key){
+  const raw = key.indexOf('q:')===0 ? key.slice(2) : key;
+  const parts = raw.split('|');
+  const pillar = parts[0], band = parts[1], size = parts[2], tier = parts[3], tech = parts[4], concept = parts[5];
+  let label = (PILLAR_LABEL[pillar]||pillar) + ' \u00b7 ' + (band==='E'?'6-8':band==='B'?'9-11':'12-14') + ' \u00b7 ' + (size==='S'?'Quick':'Long') + ' \u00b7 ' + tier;
+  if(tech) label += ' \u00b7 tools: ' + tech;
+  if(concept) label += ' \u00b7 concept: ' + concept;
+  return label;
+}
+
+function renderCachePanel(keys){
+  const panel = document.getElementById('cachePanel');
+  panel.innerHTML = keys.map(k=>
+    '<div class="cache-row"><span class="cache-label">'+escapeHtml(parseKeyLabel(k))+'</span>'+
+    '<button class="cache-del" data-key="'+encodeURIComponent(k)+'" title="Delete this saved result">\u00d7</button></div>'
+  ).join('');
+  panel.querySelectorAll('.cache-del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const key = decodeURIComponent(btn.getAttribute('data-key'));
+      try{ await fetch(MOUNT_PREFIX+'/api/cache/'+encodeURIComponent(key), {method:'DELETE'}); }catch(e){}
+      refreshCacheStatus();
+    });
+  });
+}
+
+async function refreshCacheStatus(){
+  const el = document.getElementById('cacheStatus');
+  const panel = document.getElementById('cachePanel');
+  if(!el) return;
+  try{
+    const res = await fetch(MOUNT_PREFIX+'/api/cache?prefix='+encodeURIComponent('q:'));
+    const data = await res.json();
+    const keys = (data && data.keys) ? data.keys : [];
+    if(!keys.length){
+      el.innerHTML=''; panel.innerHTML=''; panel.style.display='none';
+      return;
+    }
+    el.innerHTML = keys.length+' shared saved idea set'+(keys.length===1?'':'s')+' across your team \u00b7 <a id="manageCacheLink">manage</a> \u00b7 <a id="clearAllLink">clear all</a>';
+    document.getElementById('manageCacheLink').addEventListener('click', ()=>{
+      const showing = panel.style.display==='block';
+      if(showing){ panel.style.display='none'; }
+      else { renderCachePanel(keys); panel.style.display='block'; }
+    });
+    document.getElementById('clearAllLink').addEventListener('click', async ()=>{
+      for(const k of keys){ try{ await fetch(MOUNT_PREFIX+'/api/cache/'+encodeURIComponent(k), {method:'DELETE'}); }catch(e){} }
+      refreshCacheStatus();
+    });
+  }catch(e){ el.innerHTML=''; }
+}
+
+async function doCacheCheck(){
+  if(!state.tech && !state.concept){ updateModeToggle(); return; }
+  const key = cacheKey();
+  const cached = await getCachedResult(key);
+  if(cached){
+    renderFromParsed(cached.cards, true);
+    updateModeToggle(true);
+  } else {
+    updateModeToggle(false);
+  }
+}
+const checkCacheDebounced = debounce(doCacheCheck, 450);
+
+function renderFromParsed(parsed, fromCache){
+  const band = ageBand(state.age);
+  const size = state.minutes<=20 ? 'S' : 'L';
+  const cardsHtml = parsed.map(item=>{
+    const mapped = {t:item.title, ch:item.challenge, co:item.constraint, c1:item.coach1, c2:item.coach2, lv:item.levelUp, sig:item.lookFor};
+    return renderCard(mapped, item.mode, true, fromCache);
+  });
+  renderOutput(cardsHtml, band, size, true, fromCache);
+  document.getElementById('rerollBtn').style.display = 'none';
+}
+
+/* ---------- State ---------- */
+let state = {pillar:'ENG', age:9, level:5, minutes:30, tech:'', concept:''};
+
+document.getElementById('techInput').addEventListener('input', e=>{ state.tech = e.target.value.trim(); updateModeToggle(); checkCacheDebounced(); });
+document.getElementById('conceptInput').addEventListener('input', e=>{ state.concept = e.target.value.trim(); updateModeToggle(); checkCacheDebounced(); });
+function updateModeToggle(cacheHit){
+  const el = document.getElementById('modeToggle');
+  if(!state.tech && !state.concept){
+    el.innerHTML = 'Add a tool or concept above to switch to <b>live-generated</b> ideas.';
+  } else if(cacheHit){
+    el.innerHTML = '<b>Saved match found</b> \u2014 showing saved ideas below, no API call made.';
+  } else {
+    el.innerHTML = '<b>Live mode:</b> press Generate for fresh ideas tailored to this exact combo.';
+  }
+}
+
+/* ---------- Build controls ---------- */
+const pillarGrid = document.getElementById('pillarGrid');
+Object.keys(ICONS).forEach(key=>{
+  const btn = document.createElement('button');
+  btn.className = 'pillar-btn' + (key===state.pillar?' active':'');
+  btn.innerHTML = ICONS[key] + '<span>'+PILLAR_LABEL[key]+'</span>';
+  btn.setAttribute('data-key',key);
+  btn.addEventListener('click', ()=>{
+    state.pillar = key;
+    [...pillarGrid.children].forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    doCacheCheck();
+  });
+  pillarGrid.appendChild(btn);
+});
+
+const minuteChips = document.getElementById('minuteChips');
+[15,30,45,60].forEach(m=>{
+  const chip = document.createElement('button');
+  chip.className='chip'+(m===state.minutes?' active':'');
+  chip.textContent = m+' min';
+  chip.addEventListener('click', ()=>{
+    state.minutes = m;
+    document.getElementById('customMin').value = m;
+    [...minuteChips.children].forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    doCacheCheck();
+  });
+  minuteChips.appendChild(chip);
+});
+document.getElementById('customMin').addEventListener('input', e=>{
+  state.minutes = parseInt(e.target.value||'30',10);
+  [...minuteChips.children].forEach(c=>c.classList.remove('active'));
+});
+document.getElementById('customMin').addEventListener('change', doCacheCheck);
+
+const ageSlider = document.getElementById('ageSlider');
+const bandName = document.getElementById('bandName');
+function ageBand(age){ return age<=8?'E':(age<=11?'B':'I'); }
+function bandLabel(b){ return b==='E'?'Explorer tier (6\u20138)':(b==='B'?'Builder tier (9\u201311)':'Innovator tier (12\u201314)'); }
+ageSlider.addEventListener('input', e=>{
+  state.age = parseInt(e.target.value,10);
+  document.getElementById('ageReadout').textContent = state.age;
+  bandName.textContent = bandLabel(ageBand(state.age));
+  updateSliderFill(ageSlider);
+});
+ageSlider.addEventListener('change', doCacheCheck);
+
+const levelSlider = document.getElementById('levelSlider');
+function levelTier(lv){ return lv<=3?'tinkerer':(lv<=7?'builder':'innovator'); }
+function tierRatio(tier){ return tier==='tinkerer'?{d:70,c:30}:(tier==='builder'?{d:50,c:50}:{d:30,c:70}); }
+levelSlider.addEventListener('input', e=>{
+  state.level = parseInt(e.target.value,10);
+  document.getElementById('levelReadout').textContent = state.level;
+  const r = tierRatio(levelTier(state.level));
+  document.getElementById('ratioNote').textContent = 'Recommended mix at this level: '+r.d+'% deepen / '+r.c+'% cross-pollinate';
+  updateSliderFill(levelSlider);
+});
+levelSlider.addEventListener('change', doCacheCheck);
+function updateSliderFill(el){
+  const pct = ((el.value-el.min)/(el.max-el.min))*100;
+  el.style.setProperty('--fill', pct+'%');
+}
+updateSliderFill(ageSlider); updateSliderFill(levelSlider);
+bandName.textContent = bandLabel(ageBand(state.age));
+document.getElementById('ratioNote').textContent = 'Recommended mix at this level: 50% deepen / 50% cross-pollinate';
+[...minuteChips.children][1].classList.add('active'); // 30 min default
+
+/* ---------- Generate ---------- */
+function pickCard(list){ return list[Math.floor(Math.random()*list.length)]; }
+
+function findCandidates(){
+  const band = ageBand(state.age);
+  const size = state.minutes<=20 ? 'S' : 'L';
+  const deepen = BANK.filter(x=>x.mode==='D' && x.pillar===state.pillar && x.age===band && x.size===size);
+  const cross  = BANK.filter(x=>x.mode==='C' && x.pillar===state.pillar && x.age===band && x.size===size);
+  // fallback: relax size if nothing found
+  const deepenFinal = deepen.length? deepen : BANK.filter(x=>x.mode==='D' && x.pillar===state.pillar && x.age===band);
+  const crossFinal = cross.length? cross : BANK.filter(x=>x.mode==='C' && x.pillar===state.pillar && x.age===band);
+  const wild = WILDCARDS.filter(x=>x.age===band);
+  return {deepenFinal, crossFinal, wild, band, size};
+}
+
+function badgeFor(mode, fromCache){
+  if(fromCache) return badgeForBase(mode) + '<span class="badge cached">Saved \u00b7 No API Call</span>';
+  return badgeForBase(mode);
+}
+function badgeForBase(mode){
+  if(mode==='D') return '<span class="badge deepen">Deepen \u00b7 '+PILLAR_LABEL[state.pillar]+'</span>';
+  if(mode==='C') return '<span class="badge cross">Cross-Pollinate</span>';
+  return '<span class="badge bonus">Bonus \u00b7 Entrepreneurial</span>';
+}
+
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function applyItRow(mode){
+  const concept = state.concept, tech = state.tech;
+  if(!concept && !tech) return '';
+  let text;
+  if(concept && tech){
+    text = mode==='C'
+      ? 'Carry over <b>'+escapeHtml(concept)+'</b> from '+escapeHtml(tech)+' \u2014 see how it shows up here.'
+      : 'Bring back <b>'+escapeHtml(concept)+'</b> and push it further with '+escapeHtml(tech)+'.';
+  } else if(concept){
+    text = 'Bring back what you learned: <b>'+escapeHtml(concept)+'</b>.';
+  } else {
+    text = 'Keep using <b>'+escapeHtml(tech)+'</b> \u2014 see what else it can do.';
+  }
+  return '<div class="kv"><div class="num">Apply It</div><div class="val">'+text+'</div></div>';
+}
+
+function renderCard(item, mode, isDynamic, fromCache){
+  const rows = [];
+  rows.push(['Challenge', item.ch]);
+  if(item.co) rows.push(['Constraint', item.co]);
+  const coaches = [item.c1, item.c2].filter(Boolean);
+  let coachHtml = '<div class="kv"><div class="num">Coach Ask</div><ul class="coach-list">'+coaches.map(c=>'<li>'+c+'</li>').join('')+'</ul></div>';
+  let rowsHtml = rows.map(([label,val])=>'<div class="kv"><div class="num">'+label+'</div><div class="val">'+val+'</div></div>').join('');
+  let applyHtml = isDynamic ? '' : applyItRow(mode);
+  let lvHtml = item.lv ? '<div class="kv"><div class="num">Level-Up Twist</div><div class="val muted">'+item.lv+'</div></div>' : '';
+  let sigHtml = item.sig ? '<div class="kv"><div class="num">Look For</div><div class="val muted">'+item.sig+'</div></div>' : '';
+  return '<div class="card">'+
+    '<span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>'+
+    badgeFor(mode, fromCache)+
+    '<h3>'+item.t+'</h3>'+
+    rowsHtml + applyHtml + coachHtml + lvHtml + sigHtml +
+  '</div>';
+}
+
+function generateStatic(){
+  const {deepenFinal, crossFinal, wild, band, size} = findCandidates();
+  const cards = [];
+  const d = deepenFinal.length? pickCard(deepenFinal) : null;
+  const c = crossFinal.length? pickCard(crossFinal) : null;
+  if(d) cards.push(renderCard(d,'D',false));
+  if(c) cards.push(renderCard(c,'C',false));
+
+  const tier = levelTier(state.level);
+  const includeWild = (tier==='innovator' || size==='L') && wild.length;
+  let wildItem = null;
+  if(includeWild){ wildItem = pickCard(wild); cards.push(renderCard(wildItem,'W',false)); }
+
+  renderOutput(cards, band, size, false);
+  document.getElementById('rerollBtn').style.display = includeWild ? 'block' : 'none';
+  window._lastWild = {wild, includeWild, d, c};
+}
+
+function renderOutput(cardsHtmlArray, band, size, isDynamic, fromCache){
+  const chips = [];
+  if(state.tech) chips.push('<span class="context-chip"><b>Tools:</b> '+escapeHtml(state.tech)+'</span>');
+  if(state.concept) chips.push('<span class="context-chip"><b>Concept:</b> '+escapeHtml(state.concept)+'</span>');
+  const contextHtml = chips.length ? '<div class="context-bar">'+chips.join('')+'</div>' : '';
+  document.getElementById('outputArea').innerHTML = contextHtml + '<div class="cards">'+cardsHtmlArray.join('')+'</div>';
+  document.getElementById('outputMeta').textContent = bandLabel(band).split(' (')[0] + ' \u00b7 ' + (size==='S'?'Quick Spark':'Build Challenge / Mini Mission') + ' \u00b7 ' + state.minutes + ' min left';
+  document.getElementById('footerNote').innerHTML = fromCache
+    ? 'Loaded from a result already saved by your team for this exact combo (pillar, age band, level tier, time size, tools, concept) \u2014 no API call made, no tokens used.'
+    : isDynamic
+    ? 'Generated live from today\u2019s inputs \u2014 pillar = '+PILLAR_LABEL[state.pillar]+', age band = '+band+(state.tech?', tools = '+escapeHtml(state.tech):'')+(state.concept?', concept = '+escapeHtml(state.concept):'')+'. Saved to your shared library so any facilitator hitting this combo won\u2019t re-call the API.'
+    : 'Matched from the static library on: pillar = '+PILLAR_LABEL[state.pillar]+', age band = '+band+', time tier = '+(size==='S'?'\u226420 min':'>20 min')+'. Add a tool or concept above for ideas generated live around exactly what was taught.';
+}
+
+function showLoading(){
+  document.getElementById('outputArea').innerHTML =
+    '<div class="loading-state"><div class="spinner"></div><strong>Building ideas around '+
+    (state.concept? escapeHtml(state.concept) : escapeHtml(state.tech))+'\u2026</strong>Tailoring challenges to today\u2019s session.</div>';
+  document.getElementById('outputMeta').textContent = '';
+  document.getElementById('rerollBtn').style.display = 'none';
+}
+
+function buildDynamicPrompt(){
+  const band = ageBand(state.age);
+  const size = state.minutes<=20 ? 'S' : 'L';
+  const tier = levelTier(state.level);
+  const ratio = tierRatio(tier);
+  const includeWild = (tier==='innovator' || size==='L');
+  const bandDesc = band==='E' ? '6-8 (Explorer): keep it concrete, sensory, personal (a gift, a toy, a pet, a story character).'
+    : band==='B' ? '9-11 (Builder): can handle multi-step challenges; frame as designing for a user (a sibling, a classroom, a friend).'
+    : '12-14 (Innovator): can handle ambiguity; frame with light business language (client brief, feature, pitch, MVP).';
+  const sizeDesc = size==='S' ? 'about 15-20 minutes: a single quick, focused twist, no new tools to learn.'
+    : 'about 25-60 minutes: a real mini-build with 1-2 constraints, can combine tools.';
+
+  const cardSpec = ['One "D" (Deepen) card: stays in today\'s pillar ('+PILLAR_LABEL[state.pillar]+'), pushes the concept/tool further.',
+                     'One "C" (Cross-Pollinate) card: applies today\'s concept/tool through a DIFFERENT one of the four pillars (Fabrication, Physical Computing, Engineering, Digital Arts).'];
+  if(includeWild) cardSpec.push('One "W" (Bonus) card: a short entrepreneurial reflection/pitch prompt (name it, price it, pitch it) tied to today\'s build.');
+
+  const system = "You are a curriculum designer for Steamoji, a hands-on STEM maker academy for kids ages 6-14 (pillars: Fabrication, Physical Computing, Engineering, Digital Arts). "+
+    "Kids do a directed project, then get free time to build something else from an open prompt. Write free-time challenge prompts.\n\n"+
+    "Hard rules:\n"+
+    "- Never give step-by-step instructions or a solution. Every challenge is an open brief plus a constraint, never a recipe. This is guided discovery, not answer-giving.\n"+
+    "- Every challenge MUST explicitly require the kid to reuse or apply the specific tool(s) and/or concept given below \u2014 don't just reference the pillar in general.\n"+
+    "- Match tone and complexity to the age band description given.\n"+
+    "- Use age-appropriate entrepreneurial framing per the age band description \u2014 don't force business language on 6-8 year olds.\n"+
+    "- Keep every field to one short sentence. No markdown, no emoji.\n"+
+    "- Output ONLY a raw JSON array, no markdown fences, no preamble, no explanation text.\n"+
+    "- Each array item must have exactly these keys: mode (\"D\", \"C\", or \"W\"), title (2-4 words), challenge (1 sentence), constraint (1 short sentence), coach1 (1 open question), coach2 (1 open question or empty string), levelUp (1 short sentence stretch idea), lookFor (1 short sentence describing what good exploration looks like \u2014 not a correct answer).";
+
+  const user = "Generate free-time challenge cards for one kid, using these inputs:\n"+
+    "- Today's directed pillar: "+PILLAR_LABEL[state.pillar]+"\n"+
+    "- Technology/tools used today: "+(state.tech || "(not specified \u2014 infer something plausible for this pillar)")+"\n"+
+    "- Concept learned today: "+(state.concept || "(not specified \u2014 infer something plausible for this pillar)")+"\n"+
+    "- Age band: "+bandDesc+"\n"+
+    "- Achievement level: "+state.level+"/10 ("+tier+" tier, recommended mix "+ratio.d+"% deepen / "+ratio.c+"% cross-pollinate)\n"+
+    "- Time left / challenge size: "+sizeDesc+"\n\n"+
+    "Generate exactly "+cardSpec.length+" cards:\n"+cardSpec.map((s,i)=>(i+1)+'. '+s).join('\n');
+
+  return {system, user};
+}
+
+// Auto-detects whatever prefix this app is mounted under (e.g. '/staffportal'
+// when proxied from the main site, or '' when hit directly on Railway) by
+// looking at where '/freetime' appears in the current URL.
+const MOUNT_PREFIX = window.location.pathname.split('/freetime')[0];
+
+async function generateDynamic(){
+  const key = cacheKey();
+  const cached = await getCachedResult(key);
+  if(cached){
+    renderFromParsed(cached.cards, true);
+    return;
+  }
+
+  showLoading();
+  const {system, user} = buildDynamicPrompt();
+  try{
+    const response = await fetch(MOUNT_PREFIX+"/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: system,
+        messages: [{ role: "user", content: user }]
+      })
+    });
+    const data = await response.json();
+    const textBlocks = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    const cleaned = textBlocks.replace(/```json/g,'').replace(/```/g,'').trim();
+    const parsed = JSON.parse(cleaned);
+    if(!Array.isArray(parsed) || !parsed.length) throw new Error('Empty result');
+
+    renderFromParsed(parsed, false);
+    setCachedResult(key, parsed);
+  }catch(err){
+    console.error('Dynamic generation failed:', err);
+    document.getElementById('outputArea').innerHTML =
+      '<div class="error-note">Live generation didn\u2019t come back cleanly, so here are matched ideas from the static library instead.</div>';
+    generateStatic();
+  }
+}
+
+function onGenerateClick(){
+  if(state.tech || state.concept){
+    generateDynamic();
+  } else {
+    generateStatic();
+  }
+}
+
+/* Auth gate logic (hashing, remember-device, lock) now lives in shared /auth.js,
+   included via <script src="../auth.js"></script> above — so the whole staff
+   portal (this tool plus any future projects) shares one login. */
+
+document.getElementById('generateBtn').addEventListener('click', onGenerateClick);
+refreshCacheStatus();
+
+document.getElementById('rerollBtn').addEventListener('click', ()=>{
+  const ctx = window._lastWild;
+  if(!ctx || !ctx.includeWild) return;
+  const cardsEl = document.querySelector('.cards');
+  const newWild = pickCard(ctx.wild);
+  const wildCardHtml = renderCard(newWild,'W');
+  const existing = cardsEl.querySelectorAll('.card');
+  existing[existing.length-1].outerHTML = wildCardHtml;
+});
+</script>
+</body>
+</html>
