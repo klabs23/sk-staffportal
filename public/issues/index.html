@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Steamoji · Issue Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0B2338; --navy:#0E2A44; --navy-card:#123356; --navy-card-hi:#17436d;
+    --line-blue:#2F6690; --line-blue-soft:#1E4A70; --paper:#DCEEFB; --ink:#F3F7FA;
+    --ink-muted:#8FB3CC; --amber:#F5A93F; --coral:#FF6B4A; --cyan:#5FD0E0; --green:#6FD39A; --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background-color:var(--navy-deep);
+    background-image:linear-gradient(rgba(47,102,144,0.14) 1px, transparent 1px),linear-gradient(90deg, rgba(47,102,144,0.14) 1px, transparent 1px);
+    background-size:28px 28px;color:var(--ink);font-family:'Inter',system-ui,sans-serif;min-height:100vh;padding:24px 16px 80px;
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important;} }
+  .wrap{max-width:860px;margin:0 auto;}
+  body.locked .wrap{display:none;}
+  a{color:var(--cyan);}
+  button,input,textarea,select{font:inherit;color:inherit;}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+
+  .topbar{display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-muted);margin-bottom:14px;flex-wrap:wrap;}
+  .topbar a{color:var(--ink-muted);text-decoration:none;}
+  .topbar a:hover,.topbar .link:hover{color:var(--cyan);}
+  .topbar .link{cursor:pointer;background:none;border:none;padding:0;font-family:inherit;font-size:inherit;color:var(--ink-muted);}
+  .topbar .spacer{flex:1;}
+  .director-badge{color:var(--amber);border:1px solid var(--amber);padding:2px 8px;border-radius:20px;}
+
+  h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(28px,5vw,38px);margin:0 0 4px;letter-spacing:-0.01em;}
+  .sub{color:var(--ink-muted);font-size:14.5px;line-height:1.5;margin:0 0 14px;max-width:560px;}
+  .head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px;}
+
+  .btn{display:inline-block;text-decoration:none;background:var(--navy);border:1px solid var(--line-blue);color:var(--ink);padding:10px 14px;border-radius:var(--radius);cursor:pointer;font-weight:600;font-size:14px;}
+  .btn:hover{border-color:var(--cyan);}
+  .btn.primary{background:var(--amber);border-color:var(--amber);color:var(--navy-deep);font-family:'Space Grotesk',sans-serif;font-weight:700;}
+  .btn.primary:hover{background:#ffb84f;}
+  .btn:disabled{opacity:.5;cursor:wait;}
+  .btn.small{padding:6px 10px;font-size:12.5px;}
+
+  /* status filter */
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 14px;}
+  .filter{background:transparent;border:1px solid var(--line-blue-soft);color:var(--ink-muted);padding:7px 12px;border-radius:20px;cursor:pointer;font-size:13px;}
+  .filter .n{font-family:'IBM Plex Mono',monospace;font-size:11.5px;margin-left:6px;opacity:.8;}
+  .filter.active{border-color:var(--amber);color:var(--amber);background:rgba(245,169,63,0.1);}
+
+  /* status pill */
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid;white-space:nowrap;}
+  .pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;}
+  .s-submitted{color:var(--cyan);border-color:rgba(95,208,224,.45);background:rgba(95,208,224,.08);}
+  .s-in_progress{color:var(--amber);border-color:rgba(245,169,63,.5);background:rgba(245,169,63,.1);}
+  .s-fixed{color:var(--green);border-color:rgba(111,211,154,.45);background:rgba(111,211,154,.08);}
+  .s-not_fixing{color:var(--ink-muted);border-color:rgba(143,179,204,.4);background:rgba(143,179,204,.06);}
+
+  /* list */
+  .list{display:flex;flex-direction:column;gap:8px;}
+  .row{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:10px;text-decoration:none;color:inherit;}
+  .row:hover{border-color:var(--line-blue);background:var(--navy-card-hi);}
+  .thumb{width:64px;height:64px;border-radius:var(--radius);background:var(--navy);border:1px solid var(--line-blue-soft);object-fit:cover;display:flex;align-items:center;justify-content:center;color:var(--line-blue);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .row h3{margin:0 0 4px;font-size:15.5px;font-weight:600;color:var(--paper);line-height:1.3;}
+  .row h3 .id{color:var(--ink-muted);font-weight:500;font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin-right:6px;}
+  .meta{font-size:12.5px;color:var(--ink-muted);line-height:1.5;}
+  .row .right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+  @media (max-width:560px){ .row{grid-template-columns:52px 1fr;} .thumb{width:52px;height:52px;} .row .right{grid-column:2;flex-direction:row;align-items:center;justify-content:space-between;} }
+  .empty{border:1px dashed var(--line-blue);padding:34px 20px;text-align:center;color:var(--ink-muted);border-radius:var(--radius);}
+  .empty p{margin:0 0 14px;}
+
+  /* panels / forms */
+  .panel{background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+  label.f,span.f{display:block;font-size:13px;font-weight:600;color:var(--paper);margin:0 0 6px;}
+  label.f .opt,span.f .opt{font-weight:400;color:var(--ink-muted);}
+  .field{margin-bottom:16px;}
+  input[type=text],textarea,select{width:100%;background:var(--navy);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:10px 12px;font-size:15px;}
+  textarea{min-height:110px;resize:vertical;line-height:1.5;}
+  input[type=text]:focus,textarea:focus,select:focus{border-color:var(--cyan);}
+  .hint{font-size:12px;color:var(--ink-muted);margin-top:5px;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:560px){ .two{grid-template-columns:1fr;} }
+  .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .err{color:var(--coral);font-size:13px;}
+
+  .photo-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .photo-pick .add{width:84px;height:84px;border:1px dashed var(--line-blue);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ink-muted);cursor:pointer;font-size:12px;background:var(--navy);}
+  .photo-pick .add:hover{border-color:var(--cyan);color:var(--cyan);}
+  .photo-pick .add svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  .prev{position:relative;width:84px;height:84px;}
+  .prev img{width:100%;height:100%;object-fit:cover;border-radius:var(--radius);border:1px solid var(--line-blue-soft);}
+  .prev button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:none;background:var(--coral);color:#fff;cursor:pointer;font-size:13px;line-height:22px;padding:0;}
+  input[type=file]{display:none;}
+
+  /* detail */
+  .back{display:inline-block;margin-bottom:14px;font-size:13px;color:var(--ink-muted);text-decoration:none;}
+  .back:hover{color:var(--cyan);}
+  .d-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
+  .d-head h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,4vw,28px);margin:0 0 6px;line-height:1.2;}
+  .d-head h2 .id{color:var(--ink-muted);font-weight:500;font-size:.7em;margin-right:8px;}
+  .desc{white-space:pre-wrap;line-height:1.6;font-size:15px;margin:14px 0 0;}
+  .desc.none{color:var(--ink-muted);font-style:italic;}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:14px;}
+  .gallery img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--line-blue-soft);cursor:zoom-in;background:var(--navy);}
+  .notify{font-size:12px;color:var(--ink-muted);margin-top:10px;}
+
+  h3.sec{font-family:'Space Grotesk',sans-serif;font-size:17px;margin:26px 0 12px;}
+  .timeline{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line-blue-soft);}
+  .ev{position:relative;padding:0 0 18px 14px;}
+  .ev::before{content:"";position:absolute;left:-25px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--navy-deep);border:2px solid var(--line-blue);}
+  .ev.owner::before{border-color:var(--amber);background:var(--amber);}
+  .ev.status::before{border-color:var(--amber);}
+  .ev .who{font-size:13.5px;}
+  .ev .who b{color:var(--paper);}
+  .ev .who .tag{font-size:11px;color:var(--amber);border:1px solid rgba(245,169,63,.5);padding:1px 6px;border-radius:10px;margin-left:6px;}
+  .ev .when{font-size:12px;color:var(--ink-muted);margin-left:6px;}
+  .ev .body{white-space:pre-wrap;line-height:1.55;font-size:14.5px;margin-top:6px;background:var(--navy-card);border:1px solid var(--line-blue-soft);padding:10px 12px;border-radius:var(--radius);}
+  .ev.owner .body{border-color:rgba(245,169,63,.45);}
+  .ev .gallery{grid-template-columns:repeat(auto-fill,minmax(84px,1fr));margin-top:8px;}
+
+  .status-pick{display:flex;gap:6px;flex-wrap:wrap;}
+  .status-pick label{cursor:pointer;}
+  .status-pick input{position:absolute;opacity:0;pointer-events:none;}
+  .status-pick input:not(:checked) + .pill{opacity:.45;}
+  .status-pick input:focus-visible + .pill{outline:2px solid var(--cyan);outline-offset:2px;}
+
+  .lightbox{position:fixed;inset:0;background:rgba(5,15,25,.92);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;cursor:zoom-out;}
+  .lightbox.open{display:flex;}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:var(--radius);}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--paper);color:var(--navy-deep);padding:10px 16px;border-radius:var(--radius);font-weight:600;font-size:14px;display:none;z-index:1001;}
+  .toast.show{display:block;}
+
+  /* Auth gate (same as other portal pages) */
+  .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background-color:var(--navy-deep);background-image:linear-gradient(rgba(47,102,144,0.14) 1px, transparent 1px),linear-gradient(90deg, rgba(47,102,144,0.14) 1px, transparent 1px);background-size:28px 28px;padding:20px;}
+  body:not(.locked) .auth-gate{display:none;}
+  .auth-card{width:100%;max-width:360px;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:28px 26px;}
+  .auth-card h2{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0 0 8px;font-weight:600;color:var(--paper);}
+  .auth-card p{color:var(--ink-muted);font-size:13px;line-height:1.5;margin:0 0 20px;}
+  .auth-card input[type=password]{width:100%;background:var(--navy);border:1px solid var(--line-blue-soft);color:var(--ink);border-radius:var(--radius);padding:11px 12px;font-size:14px;margin-bottom:12px;}
+  .auth-remember{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12.5px;color:var(--ink-muted);}
+  .auth-submit{width:100%;background:var(--amber);color:var(--navy-deep);border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;padding:12px;border-radius:var(--radius);cursor:pointer;}
+  .auth-error{display:none;color:var(--coral);font-size:12.5px;margin-top:12px;}
+</style>
+</head>
+<body class="locked">
+<script src="../auth.js"></script>
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <h2>Enter passphrase</h2>
+    <p>Staff access only. Ask your director for the current passphrase.</p>
+    <input type="password" id="authPassword" placeholder="Passphrase" autocomplete="off">
+    <label class="auth-remember"><input type="checkbox" id="authRemember" checked> Remember this device</label>
+    <button class="auth-submit" id="authSubmit">Enter</button>
+    <div class="auth-error" id="authError">That passphrase didn't match. Try again.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="topbar">
+    <a href="../">← Staff Portal</a>
+    <span class="spacer"></span>
+    <span id="directorArea"></span>
+    <button class="link" id="lockLink">🔒 Lock</button>
+  </div>
+  <main id="view"></main>
+</div>
+
+<div class="lightbox" id="lightbox"><img alt="Issue photo, full size" id="lightboxImg"></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var STATUS = [
+    {key:'submitted', label:'Submitted'},
+    {key:'in_progress', label:'In progress'},
+    {key:'fixed', label:'Fixed'},
+    {key:'not_fixing', label:'Not fixing'}
+  ];
+  var LABEL = {}; STATUS.forEach(function(s){ LABEL[s.key] = s.label; });
+  var NAME_KEY = 'staffportal:name', OWNER_KEY = 'staffportal:ownerKey', FILTER_KEY = 'staffportal:issueFilter';
+  var view = document.getElementById('view');
+  var state = { owner:false, issues:[], filter: lsGet(FILTER_KEY) || 'open' };
+
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){} }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function pill(st){ return '<span class="pill s-' + esc(st) + '">' + esc(LABEL[st] || st) + '</span>'; }
+  function photoUrl(f){ return '/api/issues/photo/' + encodeURIComponent(f); }
+  function ago(ts){
+    var s = Math.round((Date.now() - ts)/1000);
+    if(s < 60) return 'just now';
+    if(s < 3600) return Math.floor(s/60) + ' min ago';
+    if(s < 86400) return Math.floor(s/3600) + ' hr ago';
+    if(s < 86400*7) return Math.floor(s/86400) + (Math.floor(s/86400) === 1 ? ' day ago' : ' days ago');
+    return new Date(ts).toLocaleDateString(undefined, {month:'short', day:'numeric', year: new Date(ts).getFullYear() === new Date().getFullYear() ? undefined : 'numeric'});
+  }
+  function fullTime(ts){ return new Date(ts).toLocaleString(undefined, {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}); }
+  function toast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(function(){ t.classList.remove('show'); }, 2600); }
+
+  function headers(extra){
+    var h = extra || {};
+    h['x-staff-key'] = getStaffKey();
+    var ok = lsGet(OWNER_KEY); if(ok) h['x-owner-key'] = ok;
+    return h;
+  }
+  function api(method, url, body, isForm){
+    var opts = { method: method, headers: headers(isForm || !body ? {} : {'Content-Type':'application/json'}) };
+    if(body) opts.body = isForm ? body : JSON.stringify(body);
+    return fetch(url, opts).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(d){
+        if(!r.ok) throw new Error(d.error || ('Request failed (' + r.status + ')'));
+        return d;
+      });
+    });
+  }
+
+  /* ---------- photo shrinking: phone photos are 3-8 MB; resize to 1600px JPEG before upload ---------- */
+  function shrink(file){
+    if(!/^image\/(jpeg|png|webp|heic|heif)$/.test(file.type) || !window.createImageBitmap) return Promise.resolve(file);
+    return createImageBitmap(file, {imageOrientation:'from-image'}).then(function(bmp){
+      var max = 1600, sc = Math.min(1, max / Math.max(bmp.width, bmp.height));
+      var c = document.createElement('canvas'); c.width = Math.round(bmp.width*sc); c.height = Math.round(bmp.height*sc);
+      c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+      return new Promise(function(res){ c.toBlob(function(b){ res(b ? new File([b], (file.name || 'photo').replace(/\.\w+$/, '') + '.jpg', {type:'image/jpeg'}) : file); }, 'image/jpeg', 0.85); });
+    }).catch(function(){ return file; });
+  }
+
+  /* Photo picker: returns {html, bind(root), files()} */
+  function photoPicker(id){
+    var files = [];
+    return {
+      html: '<div class="photo-pick" id="' + id + '"><label class="add" for="' + id + '-input"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Add photos</label></div><input type="file" id="' + id + '-input" accept="image/*" multiple>',
+      bind: function(){
+        var wrap = document.getElementById(id), input = document.getElementById(id + '-input');
+        function redraw(){
+          wrap.querySelectorAll('.prev').forEach(function(n){ n.remove(); });
+          files.forEach(function(f, i){
+            var d = document.createElement('div'); d.className = 'prev';
+            var img = document.createElement('img'); img.alt = 'Selected photo ' + (i+1); img.src = URL.createObjectURL(f);
+            var x = document.createElement('button'); x.type = 'button'; x.setAttribute('aria-label', 'Remove photo ' + (i+1)); x.textContent = '×';
+            x.onclick = function(){ files.splice(i, 1); redraw(); };
+            d.appendChild(img); d.appendChild(x); wrap.insertBefore(d, wrap.querySelector('.add'));
+          });
+          wrap.querySelector('.add').style.display = files.length >= 8 ? 'none' : '';
+        }
+        input.onchange = function(){
+          var picked = Array.prototype.slice.call(input.files).slice(0, 8 - files.length);
+          input.value = '';
+          Promise.all(picked.map(shrink)).then(function(out){ files = files.concat(out); redraw(); });
+        };
+      },
+      files: function(){ return files; }
+    };
+  }
+
+  function nameField(id){
+    return '<div class="field"><label class="f" for="' + id + '">Your name</label><input type="text" id="' + id + '" maxlength="60" autocomplete="name" value="' + esc(lsGet(NAME_KEY) || '') + '" placeholder="So SK knows who to ask"></div>';
+  }
+  function readName(id){
+    var v = document.getElementById(id).value.trim();
+    if(v) lsSet(NAME_KEY, v);
+    return v;
+  }
+
+  /* ---------- director (owner) mode ---------- */
+  function renderDirector(){
+    var a = document.getElementById('directorArea');
+    a.innerHTML = state.owner ? '<span class="director-badge">Director</span> <button class="link" id="ownerOut">Sign out director</button>' : '<button class="link" id="ownerIn">Director sign-in</button>';
+    var i = document.getElementById('ownerIn'), o = document.getElementById('ownerOut');
+    if(i) i.onclick = function(){
+      var k = prompt('Director key (the OWNER_KEY set on the server):');
+      if(!k) return;
+      fetch('/api/issues/owner-check', {headers:{'x-owner-key':k}}).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); }).then(function(x){
+        if(x.ok){ lsSet(OWNER_KEY, k); state.owner = true; renderDirector(); route(); toast('Signed in as director'); }
+        else alert(x.d.error || "That key didn't match.");
+      });
+    };
+    if(o) o.onclick = function(){ lsSet(OWNER_KEY, null); state.owner = false; renderDirector(); route(); };
+  }
+
+  /* ---------- list view ---------- */
+  var FILTERS = [
+    {key:'open', label:'Open', test:function(i){ return i.status === 'submitted' || i.status === 'in_progress'; }},
+    {key:'submitted', label:'Submitted', test:function(i){ return i.status === 'submitted'; }},
+    {key:'in_progress', label:'In progress', test:function(i){ return i.status === 'in_progress'; }},
+    {key:'fixed', label:'Fixed', test:function(i){ return i.status === 'fixed'; }},
+    {key:'not_fixing', label:'Not fixing', test:function(i){ return i.status === 'not_fixing'; }},
+    {key:'all', label:'All', test:function(){ return true; }}
+  ];
+  function renderList(){
+    view.innerHTML = '<div class="head-row"><div><h1>Issue Tracker</h1><p class="sub">Something broken, missing, or unsafe at the studio? Report it here with photos. SK gets notified right away and updates the status as it gets handled.</p></div><a class="btn primary" href="#new">+ Report an issue</a></div><div id="listBody" class="meta">Loading…</div>';
+    api('GET', '/api/issues').then(function(d){
+      state.issues = d.issues; state.owner = d.owner; renderDirector(); drawList();
+    }).catch(showLoadError);
+  }
+  function drawList(){
+    var f = FILTERS.filter(function(x){ return x.key === state.filter; })[0] || FILTERS[0];
+    var body = document.getElementById('listBody'); if(!body) return;
+    var tabs = '<div class="filters" role="tablist">' + FILTERS.map(function(x){
+      var n = state.issues.filter(x.test).length;
+      return '<button class="filter' + (x.key === f.key ? ' active' : '') + '" role="tab" aria-selected="' + (x.key === f.key) + '" data-f="' + x.key + '">' + x.label + '<span class="n">' + n + '</span></button>';
+    }).join('') + '</div>';
+    var rows = state.issues.filter(f.test);
+    var html;
+    if(!state.issues.length){
+      html = '<div class="empty"><p>No issues reported yet.</p><a class="btn primary" href="#new">Report the first one</a></div>';
+    } else if(!rows.length){
+      html = '<div class="empty"><p>Nothing in "' + esc(f.label) + '" right now.</p></div>';
+    } else {
+      html = '<div class="list">' + rows.map(function(i){
+        var th = i.thumb ? '<img class="thumb" alt="" loading="lazy" src="' + photoUrl(i.thumb) + '">' : '<div class="thumb">#' + i.id + '</div>';
+        var bits = ['by ' + esc(i.created_by)];
+        if(i.location) bits.push(esc(i.location));
+        if(i.photo_count) bits.push(i.photo_count + (i.photo_count === 1 ? ' photo' : ' photos'));
+        if(i.update_count) bits.push(i.update_count + (i.update_count === 1 ? ' update' : ' updates'));
+        return '<a class="row" href="#' + i.id + '">' + th + '<div><h3><span class="id">#' + i.id + '</span>' + esc(i.title) + '</h3><div class="meta">' + bits.join(', ') + '</div></div><div class="right">' + pill(i.status) + '<span class="meta" title="' + esc(fullTime(i.updated_at)) + '">' + ago(i.updated_at) + '</span></div></a>';
+      }).join('') + '</div>';
+    }
+    body.className = '';
+    body.innerHTML = tabs + html;
+    body.querySelectorAll('.filter').forEach(function(b){ b.onclick = function(){ state.filter = b.getAttribute('data-f'); lsSet(FILTER_KEY, state.filter); drawList(); }; });
+  }
+
+  /* ---------- new issue ---------- */
+  function renderNew(){
+    var pp = photoPicker('newPhotos');
+    view.innerHTML = '<a class="back" href="#">← All issues</a><h1>Report an issue</h1><p class="sub">Describe what you see and add a photo if you can. You and other staff can add more details later.</p>' +
+      '<div class="panel"><div class="field"><label class="f" for="nTitle">What\'s the issue?</label><input type="text" id="nTitle" maxlength="140" placeholder="e.g. Laser cutter exhaust fan is rattling"></div>' +
+      '<div class="field"><label class="f" for="nLoc">Where <span class="opt">(optional)</span></label><input type="text" id="nLoc" maxlength="80" placeholder="e.g. Fab room, front desk, bathroom"></div>' +
+      '<div class="field"><label class="f" for="nDesc">Details</label><textarea id="nDesc" maxlength="5000" placeholder="What happened, when you noticed it, whether it\'s safe to keep using…"></textarea></div>' +
+      '<div class="field"><span class="f">Photos <span class="opt">(optional, up to 8)</span></span>' + pp.html + '</div>' +
+      nameField('nName') +
+      '<div class="actions"><button class="btn primary" id="nSubmit">Report issue</button><a class="btn" href="#">Cancel</a><span class="err" id="nErr"></span></div></div>';
+    pp.bind();
+    document.getElementById('nTitle').focus();
+    document.getElementById('nSubmit').onclick = function(){
+      var btn = this, err = document.getElementById('nErr');
+      var title = document.getElementById('nTitle').value.trim(), name = readName('nName');
+      if(!title){ err.textContent = 'Add a short title for the issue.'; return; }
+      if(!name){ err.textContent = 'Add your name.'; return; }
+      var fd = new FormData();
+      fd.append('title', title); fd.append('location', document.getElementById('nLoc').value.trim());
+      fd.append('description', document.getElementById('nDesc').value.trim()); fd.append('author', name);
+      pp.files().forEach(function(f){ fd.append('photos', f, f.name || 'photo.jpg'); });
+      btn.disabled = true; btn.textContent = 'Reporting…'; err.textContent = '';
+      api('POST', '/api/issues', fd, true).then(function(d){ toast('Issue #' + d.id + ' reported'); location.hash = '#' + d.id; })
+        .catch(function(e){ err.textContent = e.message; btn.disabled = false; btn.textContent = 'Report issue'; });
+    };
+  }
+
+  /* ---------- issue detail ---------- */
+  function gallery(photos){
+    if(!photos.length) return '';
+    return '<div class="gallery">' + photos.map(function(p){ return '<img loading="lazy" alt="Issue photo" data-full="' + photoUrl(p.file) + '" src="' + photoUrl(p.file) + '">'; }).join('') + '</div>';
+  }
+  function eventText(e){
+    switch(e.kind){
+      case 'created': return 'reported this issue';
+      case 'detail': return 'added details';
+      case 'edit': return esc(e.body.toLowerCase());
+      case 'progress': return 'posted a progress note';
+      case 'status': return 'changed status ' + pill(e.from_status) + ' → ' + pill(e.to_status);
+      default: return esc(e.kind);
+    }
+  }
+  function renderDetail(id){
+    view.innerHTML = '<a class="back" href="#">← All issues</a><p class="meta">Loading…</p>';
+    api('GET', '/api/issues/' + encodeURIComponent(id)).then(function(d){
+      state.owner = d.owner; renderDirector();
+      var i = d.issue;
+      var byEvent = {}; d.photos.forEach(function(p){ (byEvent[p.event_id] = byEvent[p.event_id] || []).push(p); });
+      var created = d.events.filter(function(e){ return e.kind === 'created'; })[0];
+      var origPhotos = created ? (byEvent[created.id] || []) : [];
+      var meta = 'Reported by ' + esc(i.created_by) + ', <span title="' + esc(fullTime(i.created_at)) + '">' + ago(i.created_at) + '</span>' + (i.location ? ' · ' + esc(i.location) : '');
+      var timeline = d.events.map(function(e){
+        var cls = 'ev' + (e.is_owner ? ' owner' : '') + (e.kind === 'status' ? ' status' : '');
+        var photos = e.kind === 'created' ? [] : (byEvent[e.id] || []);
+        var showBody = e.body && e.kind !== 'edit';
+        return '<li class="' + cls + '"><div class="who"><b>' + esc(e.author) + '</b>' + (e.is_owner ? '<span class="tag">Director</span>' : '') + ' ' + eventText(e) + '<span class="when" title="' + esc(fullTime(e.created_at)) + '">' + ago(e.created_at) + '</span></div>' +
+          (showBody ? '<div class="body">' + esc(e.body) + '</div>' : '') + gallery(photos) + '</li>';
+      }).join('');
+      var pp = photoPicker('upPhotos');
+      var statusPick = state.owner ? '<div class="field"><span class="f">Status</span><div class="status-pick">' + STATUS.map(function(s){
+        return '<label><input type="radio" name="upStatus" value="' + s.key + '"' + (s.key === i.status ? ' checked' : '') + '>' + pill(s.key) + '</label>';
+      }).join('') + '</div></div>' : '';
+      view.innerHTML = '<a class="back" href="#">← All issues</a>' +
+        '<div class="panel" id="issuePanel"><div class="d-head"><div><h2><span class="id">#' + i.id + '</span>' + esc(i.title) + '</h2><div class="meta">' + meta + '</div></div><div class="actions">' + pill(i.status) + '<button class="btn small" id="editBtn">Edit</button></div></div>' +
+        '<p class="desc' + (i.description ? '' : ' none') + '">' + (i.description ? esc(i.description) : 'No description yet. Use Edit to add one.') + '</p>' + gallery(origPhotos) +
+        (state.owner && i.notify_status ? '<p class="notify">Notification: ' + esc(i.notify_status) + '</p>' : '') + '</div>' +
+        '<h3 class="sec">Activity</h3><ul class="timeline">' + timeline + '</ul>' +
+        '<h3 class="sec">' + (state.owner ? 'Update status & progress' : 'Add more details') + '</h3>' +
+        '<div class="panel">' + statusPick +
+        '<div class="field"><label class="f" for="upBody">' + (state.owner ? 'Progress note' : 'Details') + ' <span class="opt">(optional if adding photos' + (state.owner ? ' or changing status' : '') + ')</span></label><textarea id="upBody" maxlength="5000" placeholder="' + (state.owner ? 'e.g. Ordered a replacement fan, arriving Thursday' : 'e.g. It\'s getting louder, now also smells hot') + '"></textarea></div>' +
+        '<div class="field"><span class="f">Photos <span class="opt">(optional)</span></span>' + pp.html + '</div>' +
+        nameField('upName') +
+        '<div class="actions"><button class="btn primary" id="upSubmit">' + (state.owner ? 'Post update' : 'Add details') + '</button><span class="err" id="upErr"></span></div></div>';
+      pp.bind();
+      document.getElementById('editBtn').onclick = function(){ renderEdit(i); };
+      document.getElementById('upSubmit').onclick = function(){
+        var btn = this, err = document.getElementById('upErr'), name = readName('upName');
+        var body = document.getElementById('upBody').value.trim();
+        var picked = document.querySelector('input[name=upStatus]:checked');
+        var st = picked ? picked.value : '';
+        if(!name){ err.textContent = 'Add your name.'; return; }
+        if(!body && !pp.files().length && (!st || st === i.status)){ err.textContent = state.owner ? 'Write a note, add a photo, or pick a new status.' : 'Write something or add a photo.'; return; }
+        var fd = new FormData(); fd.append('author', name); fd.append('body', body);
+        if(st && st !== i.status) fd.append('status', st);
+        pp.files().forEach(function(f){ fd.append('photos', f, f.name || 'photo.jpg'); });
+        btn.disabled = true; err.textContent = '';
+        api('POST', '/api/issues/' + i.id + '/updates', fd, true).then(function(){ toast(st && st !== i.status ? 'Status set to ' + LABEL[st] : 'Update posted'); renderDetail(i.id); })
+          .catch(function(e){ err.textContent = e.message; btn.disabled = false; });
+      };
+    }).catch(showLoadError);
+  }
+
+  function renderEdit(i){
+    var p = document.getElementById('issuePanel');
+    p.innerHTML = '<div class="field"><label class="f" for="eTitle">Title</label><input type="text" id="eTitle" maxlength="140" value="' + esc(i.title) + '"></div>' +
+      '<div class="field"><label class="f" for="eLoc">Where <span class="opt">(optional)</span></label><input type="text" id="eLoc" maxlength="80" value="' + esc(i.location) + '"></div>' +
+      '<div class="field"><label class="f" for="eDesc">Details</label><textarea id="eDesc" maxlength="5000">' + esc(i.description) + '</textarea></div>' +
+      nameField('eName') +
+      '<div class="actions"><button class="btn primary" id="eSave">Save changes</button><button class="btn" id="eCancel">Cancel</button><span class="err" id="eErr"></span></div>';
+    document.getElementById('eCancel').onclick = function(){ renderDetail(i.id); };
+    document.getElementById('eSave').onclick = function(){
+      var err = document.getElementById('eErr'), name = readName('eName');
+      if(!name){ err.textContent = 'Add your name.'; return; }
+      api('PATCH', '/api/issues/' + i.id, { title: document.getElementById('eTitle').value, location: document.getElementById('eLoc').value, description: document.getElementById('eDesc').value, author: name })
+        .then(function(d){ toast(d.unchanged ? 'No changes to save' : 'Changes saved'); renderDetail(i.id); })
+        .catch(function(e){ err.textContent = e.message; });
+    };
+  }
+
+  function showLoadError(e){
+    view.innerHTML = '<a class="back" href="#">← All issues</a><div class="empty"><p>' + esc(e.message) + '</p><button class="btn" onclick="location.reload()">Reload</button></div>';
+  }
+
+  /* ---------- lightbox ---------- */
+  var lb = document.getElementById('lightbox');
+  document.addEventListener('click', function(ev){
+    var t = ev.target;
+    if(t.tagName === 'IMG' && t.getAttribute('data-full')){ document.getElementById('lightboxImg').src = t.getAttribute('data-full'); lb.classList.add('open'); }
+  });
+  lb.onclick = function(){ lb.classList.remove('open'); };
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') lb.classList.remove('open'); });
+
+  /* ---------- routing: #  (list), #new, #<id> ---------- */
+  function route(){
+    if(document.body.classList.contains('locked')) return;
+    var h = location.hash.replace(/^#/, '');
+    window.scrollTo(0, 0);
+    if(h === 'new') renderNew();
+    else if(/^\d+$/.test(h)) renderDetail(h);
+    else renderList();
+  }
+  window.addEventListener('hashchange', route);
+  document.addEventListener('portal:unlocked', route);
+  document.addEventListener('DOMContentLoaded', function(){ state.owner = !!lsGet(OWNER_KEY); renderDirector(); });
+})();
+</script>
+</body>
+</html>

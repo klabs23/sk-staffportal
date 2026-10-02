@@ -94,3 +94,47 @@ Drop a new folder under `public/` (e.g. `public/quizmaker/index.html`),
 include `<script src="../auth.js"></script>` in it the same way, and add a
 new card to the project grid in `public/index.html`. It'll inherit the same
 login automatically.
+
+---
+
+# Issue Tracker (`/issues`)
+
+Staff report problems (with photos); the director gets an email (and optionally
+a text) for every new issue and moves it through Submitted → In progress →
+Fixed / Not fixing.
+
+**Who can do what**
+- Any staff (portal passphrase): report issues, add photos, add details, edit
+  title/location/description. Everyone's changes show in the activity log with
+  their name.
+- Director (`OWNER_KEY`): everything above, plus change status and post progress
+  notes. Click **Director sign-in** on the Issue Tracker page and enter the key
+  once per device. The server enforces this, so staff can't change status even
+  by calling the API directly.
+
+**Storage:** issues live in the same `cache.db` and photos in
+`/data/issue-photos/`, both on the existing `/data` volume. Photos are resized to
+1600px in the browser before upload (~300 KB each).
+
+## Railway variables to add
+
+| Variable | Value |
+|---|---|
+| `OWNER_KEY` | A long random secret only SK knows (e.g. 4–5 random words) |
+| `RESEND_API_KEY` | From resend.com → API Keys |
+| `NOTIFY_EMAIL` | `sankethka@metra.io` (comma-separate to add more) |
+| `NOTIFY_SMS` | Optional. Carrier email-to-text address, e.g. `4255551234@vtext.com` |
+| `NOTIFY_FROM` | Optional until a domain is verified in Resend; then e.g. `Steamoji Issues <issues@steamojikirkland.com>` |
+| `PUBLIC_URL` | `https://staffportal.steamojikirkland.com` (default) |
+
+Why Resend instead of SMTP: Railway blocks outbound SMTP on non-Pro plans, so
+email goes over Resend's HTTPS API (free tier: 3,000 emails/month).
+
+Until a sending domain is verified in Resend, its test sender can only deliver
+to the email address the Resend account was created with, so sign up for Resend
+using `sankethka@metra.io`. Verifying `steamojikirkland.com` (adds a few DNS
+records in GoDaddy) lifts that limit and is needed for the SMS gateway address.
+
+Startup log confirms config:
+`Issue tracker ready. OWNER_KEY set: true. RESEND_API_KEY set: true. NOTIFY_SMS set: false`.
+The director view also shows per-issue notification status (e.g. "email sent").

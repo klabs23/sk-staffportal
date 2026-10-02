@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
+const mountIssues = require('./issues');
 
 const app = express();
 app.use(express.json());
@@ -18,6 +19,9 @@ db.exec(`CREATE TABLE IF NOT EXISTS cache (
   value TEXT NOT NULL,
   savedAt INTEGER NOT NULL
 )`);
+
+// --- Issue tracker API (staff report issues; director tracks status) ---
+mountIssues(app, db, DATA_DIR);
 
 // --- Static site ---
 app.use(express.static(path.join(__dirname, 'public')));

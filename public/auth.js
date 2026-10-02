@@ -24,6 +24,11 @@ async function sha256Hex(str){
 
 function unlockApp(){
   document.body.classList.remove('locked');
+  try{ document.dispatchEvent(new Event('portal:unlocked')); }catch(e){}
+}
+/* Pages that call the server (e.g. Issue Tracker) send this as x-staff-key. */
+function getStaffKey(){
+  try{ return localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY) || ''; }catch(e){ return ''; }
 }
 function lockApp(){
   document.body.classList.add('locked');
@@ -45,6 +50,7 @@ async function attemptLogin(){
   const hash = await sha256Hex(pwInput.value);
   if(hash === AUTH_HASH){
     if(errEl) errEl.style.display = 'none';
+    try{ sessionStorage.setItem(AUTH_STORAGE_KEY, AUTH_HASH); }catch(e){}
     unlockApp();
     if(remember && remember.checked){
       try{ localStorage.setItem(AUTH_STORAGE_KEY, AUTH_HASH); }catch(e){}
@@ -63,7 +69,7 @@ function initAuthGate(){
   if(submitBtn) submitBtn.addEventListener('click', attemptLogin);
   if(pwInput) pwInput.addEventListener('keydown', e=>{ if(e.key==='Enter') attemptLogin(); });
   if(lockLink) lockLink.addEventListener('click', ()=>{
-    try{ localStorage.removeItem(AUTH_STORAGE_KEY); }catch(e){}
+    try{ localStorage.removeItem(AUTH_STORAGE_KEY); sessionStorage.removeItem(AUTH_STORAGE_KEY); }catch(e){}
     lockApp();
   });
   checkRememberedAuth();
