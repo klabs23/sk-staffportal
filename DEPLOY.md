@@ -121,7 +121,8 @@ Fixed / Not fixing.
 | Variable | Value |
 |---|---|
 | `OWNER_KEY` | A long random secret only SK knows (e.g. 4–5 random words) |
-| `RESEND_API_KEY` | From resend.com → API Keys |
+| `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER` | Send through Gmail (preferred). See "Gmail setup" below |
+| `RESEND_API_KEY` | Alternative to Gmail: from resend.com → API Keys |
 | `NOTIFY_EMAIL` | `sankethka@metra.io` (comma-separate to add more) |
 | `NOTIFY_SMS` | Optional. Carrier email-to-text address, e.g. `4255551234@vtext.com` |
 | `NOTIFY_FROM` | Optional until a domain is verified in Resend; then e.g. `Steamoji Issues <issues@steamojikirkland.com>` |
@@ -138,3 +139,28 @@ records in GoDaddy) lifts that limit and is needed for the SMS gateway address.
 Startup log confirms config:
 `Issue tracker ready. OWNER_KEY set: true. RESEND_API_KEY set: true. NOTIFY_SMS set: false`.
 The director view also shows per-issue notification status (e.g. "email sent").
+
+## Gmail setup (one time, ~10 minutes)
+
+Railway blocks SMTP below the Pro plan, so the server uses the Gmail API over
+HTTPS instead. Do this signed in as the Gmail account that will *send* the
+notifications.
+
+1. console.cloud.google.com → create a project (e.g. "Steamoji Staff Portal").
+2. APIs & Services → Library → enable **Gmail API**.
+3. APIs & Services → OAuth consent screen. Choose **Internal** if the account is
+   Google Workspace; otherwise **External**, add yourself as a test user, then
+   click **Publish app**. (An External app left in "Testing" has its refresh
+   token expire after 7 days, which silently stops notifications.)
+4. Credentials → Create credentials → OAuth client ID → type **Web
+   application**, authorized redirect URI
+   `https://developers.google.com/oauthplayground`. Copy the client ID and secret.
+5. developers.google.com/oauthplayground → gear icon → check "Use your own OAuth
+   credentials", paste the ID and secret. In "Input your own scopes" enter
+   `https://www.googleapis.com/auth/gmail.send`, Authorize, sign in, then
+   "Exchange authorization code for tokens". Copy the **refresh token**.
+6. In Railway Variables set `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`,
+   `GMAIL_REFRESH_TOKEN`, and `GMAIL_SENDER` (that account's address).
+
+The startup log will then say `Email via: Gmail API`. The `gmail.send` scope
+can only send mail; it cannot read the inbox.

@@ -9,8 +9,9 @@
 //   Staff  -> header x-staff-key = the portal passphrase hash (same deterrent level as the portal gate)
 //   Owner  -> header x-owner-key = OWNER_KEY env var (a real server-side secret). Required for status changes.
 //
-// Notifications (new issue only), via Resend's HTTP API (Railway blocks outbound SMTP on most plans):
-//   RESEND_API_KEY   required to send anything
+// Notifications (new issue only). Railway blocks outbound SMTP below Pro, so both options use HTTPS APIs:
+//   Gmail API (preferred): GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN (scope gmail.send), GMAIL_SENDER (the account's address)
+//   or Resend:             RESEND_API_KEY
 //   NOTIFY_EMAIL     comma-separated, full email with details     (default sankethka@metra.io)
 //   NOTIFY_SMS       comma-separated carrier SMS gateway addresses, short text-only message (optional)
 //   NOTIFY_FROM      sender, e.g. "Steamoji Issues <issues@steamojikirkland.com>" (default onboarding@resend.dev)
@@ -212,7 +213,46 @@ module.exports = function mountIssues(app, db, DATA_DIR) {
 
   // --- notifications ---
   const list = (s) => String(s || '').split(',').map((x) => x.trim()).filter(Boolean);
+  // Email provider: Gmail API if GMAIL_* vars are set, otherwise Resend.
+  // Gmail goes over HTTPS (port 443), so it works even though Railway blocks SMTP below the Pro plan.
+  const useGmail = () => !!(process.env.GMAIL_CLIENT_ID && process.env.GMAIL_CLIENT_SECRET && process.env.GMAIL_REFRESH_TOKEN);
+  const emailConfigured = () => useGmail() || !!process.env.RESEND_API_KEY;
+  let gmailToken = { value: '', exp: 0 };
+  async function gmailAccessToken() {
+    if (gmailToken.value && Date.now() < gmailToken.exp - 60000) return gmailToken.value;
+    const r = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: process.env.GMAIL_CLIENT_ID, client_secret: process.env.GMAIL_CLIENT_SECRET, refresh_token: process.env.GMAIL_REFRESH_TOKEN, grant_type: 'refresh_token' }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.access_token) throw new Error('Gmail token refresh failed: ' + (d.error_description || d.error || r.status));
+    gmailToken = { value: d.access_token, exp: Date.now() + (d.expires_in || 3600) * 1000 };
+    return gmailToken.value;
+  }
+  const b64 = (s) => Buffer.from(s, 'utf8').toString('base64');
+  const encHeader = (s) => (/^[\x20-\x7e]*$/.test(s) ? s : '=?UTF-8?B?' + b64(s) + '?=');
+  function buildMime(to, subject, text, html) {
+    const from = process.env.GMAIL_SENDER ? 'Steamoji Issues <' + process.env.GMAIL_SENDER + '>' : null;
+    const head = [...(from ? ['From: ' + from] : []), 'To: ' + to.join(', '), 'Subject: ' + encHeader(subject), 'MIME-Version: 1.0'];
+    if (!html) return [...head, 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', b64(text)].join('\r\n');
+    const bd = 'b_' + crypto.randomBytes(8).toString('hex');
+    return [...head, 'Content-Type: multipart/alternative; boundary="' + bd + '"', '',
+      '--' + bd, 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', b64(text),
+      '--' + bd, 'Content-Type: text/html; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', b64(html),
+      '--' + bd + '--', ''].join('\r\n');
+  }
   async function sendEmail(to, subject, text, html) {
+    if (useGmail()) {
+      const raw = Buffer.from(buildMime(to, subject, text, html), 'utf8').toString('base64url');
+      const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + (await gmailAccessToken()), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ raw }),
+      });
+      if (!r.ok) throw new Error('Gmail ' + r.status + ': ' + (await r.text()).slice(0, 300));
+      return;
+    }
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
@@ -220,9 +260,10 @@ module.exports = function mountIssues(app, db, DATA_DIR) {
     });
     if (!r.ok) throw new Error('Resend ' + r.status + ': ' + (await r.text()).slice(0, 300));
   }
+  module.exports._buildMime = buildMime;
   async function notifyNewIssue(issue, photoCount) {
     const setNotify = (s) => db.prepare('UPDATE issues SET notify_status = ? WHERE id = ?').run(s, issue.id);
-    if (!process.env.RESEND_API_KEY) { setNotify('not sent: RESEND_API_KEY missing'); console.warn('[issues] RESEND_API_KEY not set; skipping notification'); return; }
+    if (!emailConfigured()) { setNotify('not sent: email not configured'); console.warn('[issues] no GMAIL_* or RESEND_API_KEY set; skipping notification'); return; }
     const base = (process.env.PUBLIC_URL || 'https://staffportal.steamojikirkland.com').replace(/\/$/, '');
     const link = base + '/issues/#' + issue.id;
     const emails = list(process.env.NOTIFY_EMAIL || 'sankethka@metra.io');
@@ -244,5 +285,5 @@ module.exports = function mountIssues(app, db, DATA_DIR) {
     setNotify(results.join(', ') || 'no recipients configured');
   }
 
-  console.log(`Issue tracker ready. OWNER_KEY set: ${!!process.env.OWNER_KEY}. RESEND_API_KEY set: ${!!process.env.RESEND_API_KEY}. NOTIFY_SMS set: ${!!process.env.NOTIFY_SMS}`);
+  console.log(`Issue tracker ready. OWNER_KEY set: ${!!process.env.OWNER_KEY}. Email via: ${useGmail() ? 'Gmail API' : process.env.RESEND_API_KEY ? 'Resend' : 'NOT CONFIGURED'}. NOTIFY_SMS set: ${!!process.env.NOTIFY_SMS}`);
 };
