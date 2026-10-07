@@ -259,7 +259,7 @@
 </div>
 
 <div class="name-ask" id="nameAsk" role="dialog" aria-modal="true" aria-labelledby="nameAskTitle"><div class="card">
-  <h2 id="nameAskTitle">What's your name?</h2>
+  <h2 id="nameAskTitle">Who's making this change?</h2>
   <p>Changes are logged with who made them.</p>
   <input type="text" id="nameAskInput" maxlength="60" autocomplete="off" placeholder="Your name">
   <div class="actions"><button class="btn primary" id="nameAskOk">Continue</button><button class="btn" id="nameAskCancel">Cancel</button></div>
@@ -354,6 +354,11 @@
   function canComplete(r){ return isOpen(r.status) || r.status === 'ordered'; }
   // Shared studio devices: names are never remembered or pre-filled. Each change asks who is making it.
   var actingName = '';
+  // Name typed when confirming a change (Mark completed / Need again / edits) is remembered on this device
+  // and pre-filled the next time, so it's one tap to confirm. New-request forms still start empty.
+  var CONFIRM_KEY = 'staffportal:confirmName';
+  function lastConfirmName(){ return lsGet(CONFIRM_KEY) || ''; }
+  function rememberConfirmName(n){ if(n) lsSet(CONFIRM_KEY, n); }
   function myName(){ return actingName; }
   function saveName(n){ actingName = n; }
   // Every change is logged with a name. If we don't have one yet, ask for it right here (small dialog), then carry on.
@@ -362,11 +367,12 @@
     if(state.owner) return go();
     var m = document.getElementById('nameAsk');
     m.classList.add('open');
-    var input = document.getElementById('nameAskInput'); input.value = ''; setTimeout(function(){ input.focus(); }, 30);
+    var input = document.getElementById('nameAskInput'); input.value = lastConfirmName();
+    setTimeout(function(){ input.focus(); input.select(); }, 30);
     function close(){ m.classList.remove('open'); document.getElementById('nameAskOk').onclick = document.getElementById('nameAskCancel').onclick = input.onkeydown = null; }
     document.getElementById('nameAskOk').onclick = function(){
       var n = input.value.trim(); if(!n){ input.focus(); return; }
-      saveName(n); close(); go();
+      saveName(n); rememberConfirmName(n); close(); go();
     };
     input.onkeydown = function(e){ if(e.key === 'Enter') document.getElementById('nameAskOk').click(); if(e.key === 'Escape') document.getElementById('nameAskCancel').click(); };
     document.getElementById('nameAskCancel').onclick = function(){ close(); if(cancel) cancel(); };
@@ -545,7 +551,7 @@
     return '<div class="reopen" id="reopenBox"><span class="f">Need it again</span><p class="meta" style="margin:0 0 10px">Puts this back on the Needed list (no need to create a new request) and emails SK.</p>' +
       '<div class="field"><div class="urg">' + URGENCY.map(function(u, i){ return '<label><input type="radio" name="rUrg" value="' + u.key + '"' + (i === 0 ? ' checked' : '') + '><span class="opt-card"><b>' + u.label + '</b><span>' + u.hint + '</span></span></label>'; }).join('') + '</div></div>' +
       '<div class="two"><div class="field"><label class="f" for="rWhy">Note <span class="opt">(optional)</span></label><input type="text" id="rWhy" maxlength="500" placeholder="e.g. Ran out again, need 2 boxes this time"></div>' +
-      '<div class="field"><label class="f" for="rName">Your name <span class="req">(required)</span></label><input type="text" id="rName" maxlength="60" autocomplete="off" required placeholder="Type your name"></div></div>' +
+      '<div class="field"><label class="f" for="rName">Your name <span class="req">(required)</span></label><input type="text" id="rName" maxlength="60" autocomplete="off" required placeholder="Type your name" value="' + esc(lastConfirmName()) + '"></div></div>' +
       '<div class="actions"><button class="btn primary" id="rGo">Mark as needed</button><button class="btn" id="rCancel">Cancel</button></div></div>';
   }
   function renderDetail(id, openReopen){
@@ -573,7 +579,7 @@
         document.getElementById('rGo').onclick = function(){
           var go = this, rn = document.getElementById('rName').value.trim();
           if(!rn && !state.owner){ toast('Add your name'); document.getElementById('rName').focus(); return; }
-          saveName(rn);
+          saveName(rn); rememberConfirmName(rn);
           go.disabled = true;
           doSetStatus(r.id, (document.querySelector('input[name=rUrg]:checked') || {}).value || 'in_need', {reason: document.getElementById('rWhy').value.trim()},
             function(){ state.rows = []; renderDetail(r.id); }, function(){ go.disabled = false; });
