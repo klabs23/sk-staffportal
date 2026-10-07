@@ -164,3 +164,39 @@ notifications.
 
 The startup log will then say `Email via: Gmail API`. The `gmail.send` scope
 can only send mail; it cannot read the inbox.
+
+---
+
+# Supply Requests (`/supplies`)
+
+Replaces the "Kirkland Materials List" Google Sheet. The form has the sheet's
+fields (Item Name, Quantity, Purpose, Facilitator Who Requested, Notes, Status,
+with Date Added filled in automatically) plus an optional Amazon link and a
+"Search Amazon" button.
+
+- **Status:** staff pick In Need, Low, or Would Be Nice when submitting. Anyone
+  can mark a request Completed (the name of whoever did it is recorded). Only
+  the director can set Ordered, Not Purchasing, or Return, or post a note to
+  staff (director key = the same `OWNER_KEY` used by the Issue Tracker).
+- **Need it again:** anything Completed can be put back on the Needed list by
+  anyone (with an urgency and optional note), so nobody has to re-create the
+  request. It jumps back to the top of the list and SK gets a "Needed again" email.
+- **Activity log:** every request, status change, edit, link change, and director
+  note is logged with who did it and when. Each request shows its own history;
+  "Activity log" on the main page shows everything, newest first. Staff enter
+  their name once in the "You:" box at the top (remembered on that device).
+- **Bought before:** while staff type the item name, the form shows matching
+  past purchases (with links when we have them) and any open request for the
+  same thing, so duplicates are obvious. Open requests in the list get a
+  "Buy again" button when a past purchase has a link.
+- **History:** on first boot the server imports the sheet once from
+  `supplies-seed.json` (495 rows, exported 2026-10-06; 48 have Amazon links).
+  Saving a purchase link when you mark something Ordered/Completed builds up the
+  "buy again" library over time.
+- **Email:** every new request emails the same recipients as the Issue Tracker
+  (`NOTIFY_EMAIL`, default `sankethka@metra.io`; set `SUPPLY_NOTIFY_EMAIL` to send
+  supply requests somewhere else) through the same Gmail/Resend
+  setup as the Issue Tracker. The email includes past-purchase links and an
+  Amazon search link.
+
+Startup log: `Supply requests ready. Notify: sankethka@metra.io via Gmail API`.

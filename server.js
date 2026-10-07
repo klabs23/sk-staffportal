@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
 const mountIssues = require('./issues');
+const mountSupplies = require('./supplies');
 
 const app = express();
 app.use(express.json());
@@ -22,6 +23,9 @@ db.exec(`CREATE TABLE IF NOT EXISTS cache (
 
 // --- Issue tracker API (staff report issues; director tracks status) ---
 mountIssues(app, db, DATA_DIR);
+
+// --- Supply requests API (replaces the materials Google Sheet) ---
+mountSupplies(app, db);
 
 // --- Static site ---
 app.use(express.static(path.join(__dirname, 'public')));

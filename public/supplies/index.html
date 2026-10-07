@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Steamoji · Supply Requests</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0B2338; --navy:#0E2A44; --navy-card:#123356; --navy-card-hi:#17436d;
+    --line-blue:#2F6690; --line-blue-soft:#1E4A70; --paper:#DCEEFB; --ink:#F3F7FA;
+    --ink-muted:#8FB3CC; --amber:#F5A93F; --coral:#FF6B4A; --cyan:#5FD0E0; --green:#6FD39A; --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background-color:var(--navy-deep);
+    background-image:linear-gradient(rgba(47,102,144,0.14) 1px, transparent 1px),linear-gradient(90deg, rgba(47,102,144,0.14) 1px, transparent 1px);
+    background-size:28px 28px;color:var(--ink);font-family:'Inter',system-ui,sans-serif;min-height:100vh;padding:24px 16px 80px;
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important;} }
+  .wrap{max-width:860px;margin:0 auto;}
+  body.locked .wrap{display:none;}
+  a{color:var(--cyan);}
+  button,input,textarea,select{font:inherit;color:inherit;}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+
+  .topbar{display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-muted);margin-bottom:14px;flex-wrap:wrap;}
+  .topbar a{color:var(--ink-muted);text-decoration:none;}
+  .topbar a:hover,.topbar .link:hover{color:var(--cyan);}
+  .topbar .link{cursor:pointer;background:none;border:none;padding:0;font-family:inherit;font-size:inherit;color:var(--ink-muted);}
+  .topbar .spacer{flex:1;}
+  .director-badge{color:var(--amber);border:1px solid var(--amber);padding:2px 8px;border-radius:20px;}
+
+  h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(28px,5vw,38px);margin:0 0 4px;letter-spacing:-0.01em;}
+  .sub{color:var(--ink-muted);font-size:14.5px;line-height:1.5;margin:0 0 14px;max-width:560px;}
+  .head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px;}
+
+  .btn{display:inline-block;text-decoration:none;background:var(--navy);border:1px solid var(--line-blue);color:var(--ink);padding:10px 14px;border-radius:var(--radius);cursor:pointer;font-weight:600;font-size:14px;}
+  .btn:hover{border-color:var(--cyan);}
+  .btn.primary{background:var(--amber);border-color:var(--amber);color:var(--navy-deep);font-family:'Space Grotesk',sans-serif;font-weight:700;}
+  .btn.primary:hover{background:#ffb84f;}
+  .btn:disabled{opacity:.5;cursor:wait;}
+  .btn.small{padding:6px 10px;font-size:12.5px;}
+
+  /* status filter */
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 14px;}
+  .filter{background:transparent;border:1px solid var(--line-blue-soft);color:var(--ink-muted);padding:7px 12px;border-radius:20px;cursor:pointer;font-size:13px;}
+  .filter .n{font-family:'IBM Plex Mono',monospace;font-size:11.5px;margin-left:6px;opacity:.8;}
+  .filter.active{border-color:var(--amber);color:var(--amber);background:rgba(245,169,63,0.1);}
+
+  /* status pill */
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid;white-space:nowrap;}
+  .pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;}
+  .s-submitted{color:var(--cyan);border-color:rgba(95,208,224,.45);background:rgba(95,208,224,.08);}
+  .s-in_progress{color:var(--amber);border-color:rgba(245,169,63,.5);background:rgba(245,169,63,.1);}
+  .s-fixed{color:var(--green);border-color:rgba(111,211,154,.45);background:rgba(111,211,154,.08);}
+  .s-not_fixing{color:var(--ink-muted);border-color:rgba(143,179,204,.4);background:rgba(143,179,204,.06);}
+
+  /* list */
+  .list{display:flex;flex-direction:column;gap:8px;}
+  .row{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:10px;text-decoration:none;color:inherit;}
+  .row:hover{border-color:var(--line-blue);background:var(--navy-card-hi);}
+  .thumb{width:64px;height:64px;border-radius:var(--radius);background:var(--navy);border:1px solid var(--line-blue-soft);object-fit:cover;display:flex;align-items:center;justify-content:center;color:var(--line-blue);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .row h3{margin:0 0 4px;font-size:15.5px;font-weight:600;color:var(--paper);line-height:1.3;}
+  .row h3 .id{color:var(--ink-muted);font-weight:500;font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin-right:6px;}
+  .meta{font-size:12.5px;color:var(--ink-muted);line-height:1.5;}
+  .row .right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+  @media (max-width:560px){ .row{grid-template-columns:52px 1fr;} .thumb{width:52px;height:52px;} .row .right{grid-column:2;flex-direction:row;align-items:center;justify-content:space-between;} }
+  .empty{border:1px dashed var(--line-blue);padding:34px 20px;text-align:center;color:var(--ink-muted);border-radius:var(--radius);}
+  .empty p{margin:0 0 14px;}
+
+  /* panels / forms */
+  .panel{background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+  label.f,span.f{display:block;font-size:13px;font-weight:600;color:var(--paper);margin:0 0 6px;}
+  label.f .opt,span.f .opt{font-weight:400;color:var(--ink-muted);}
+  .field{margin-bottom:16px;}
+  input[type=text],textarea,select{width:100%;background:var(--navy);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:10px 12px;font-size:15px;}
+  textarea{min-height:110px;resize:vertical;line-height:1.5;}
+  input[type=text]:focus,textarea:focus,select:focus{border-color:var(--cyan);}
+  .hint{font-size:12px;color:var(--ink-muted);margin-top:5px;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:560px){ .two{grid-template-columns:1fr;} }
+  .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .err{color:var(--coral);font-size:13px;}
+
+  .photo-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .photo-pick .add{width:84px;height:84px;border:1px dashed var(--line-blue);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ink-muted);cursor:pointer;font-size:12px;background:var(--navy);}
+  .photo-pick .add:hover{border-color:var(--cyan);color:var(--cyan);}
+  .photo-pick .add svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  .prev{position:relative;width:84px;height:84px;}
+  .prev img{width:100%;height:100%;object-fit:cover;border-radius:var(--radius);border:1px solid var(--line-blue-soft);}
+  .prev button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:none;background:var(--coral);color:#fff;cursor:pointer;font-size:13px;line-height:22px;padding:0;}
+  input[type=file]{display:none;}
+
+  /* detail */
+  .back{display:inline-block;margin-bottom:14px;font-size:13px;color:var(--ink-muted);text-decoration:none;}
+  .back:hover{color:var(--cyan);}
+  .d-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
+  .d-head h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,4vw,28px);margin:0 0 6px;line-height:1.2;}
+  .d-head h2 .id{color:var(--ink-muted);font-weight:500;font-size:.7em;margin-right:8px;}
+  .desc{white-space:pre-wrap;line-height:1.6;font-size:15px;margin:14px 0 0;}
+  .desc.none{color:var(--ink-muted);font-style:italic;}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:14px;}
+  .gallery img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--line-blue-soft);cursor:zoom-in;background:var(--navy);}
+  .notify{font-size:12px;color:var(--ink-muted);margin-top:10px;}
+
+  h3.sec{font-family:'Space Grotesk',sans-serif;font-size:17px;margin:26px 0 12px;}
+  .timeline{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line-blue-soft);}
+  .ev{position:relative;padding:0 0 18px 14px;}
+  .ev::before{content:"";position:absolute;left:-25px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--navy-deep);border:2px solid var(--line-blue);}
+  .ev.owner::before{border-color:var(--amber);background:var(--amber);}
+  .ev.status::before{border-color:var(--amber);}
+  .ev .who{font-size:13.5px;}
+  .ev .who b{color:var(--paper);}
+  .ev .who .tag{font-size:11px;color:var(--amber);border:1px solid rgba(245,169,63,.5);padding:1px 6px;border-radius:10px;margin-left:6px;}
+  .ev .when{font-size:12px;color:var(--ink-muted);margin-left:6px;}
+  .ev .body{white-space:pre-wrap;line-height:1.55;font-size:14.5px;margin-top:6px;background:var(--navy-card);border:1px solid var(--line-blue-soft);padding:10px 12px;border-radius:var(--radius);}
+  .ev.owner .body{border-color:rgba(245,169,63,.45);}
+  .ev .gallery{grid-template-columns:repeat(auto-fill,minmax(84px,1fr));margin-top:8px;}
+
+  .status-pick{display:flex;gap:6px;flex-wrap:wrap;}
+  .status-pick label{cursor:pointer;}
+  .status-pick input{position:absolute;opacity:0;pointer-events:none;}
+  .status-pick input:not(:checked) + .pill{opacity:.45;}
+  .status-pick input:focus-visible + .pill{outline:2px solid var(--cyan);outline-offset:2px;}
+
+  .lightbox{position:fixed;inset:0;background:rgba(5,15,25,.92);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;cursor:zoom-out;}
+  .lightbox.open{display:flex;}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:var(--radius);}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--paper);color:var(--navy-deep);padding:10px 16px;border-radius:var(--radius);font-weight:600;font-size:14px;display:none;z-index:1001;}
+  .toast.show{display:block;}
+
+  /* Auth gate (same as other portal pages) */
+  .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background-color:var(--navy-deep);background-image:linear-gradient(rgba(47,102,144,0.14) 1px, transparent 1px),linear-gradient(90deg, rgba(47,102,144,0.14) 1px, transparent 1px);background-size:28px 28px;padding:20px;}
+  body:not(.locked) .auth-gate{display:none;}
+  .auth-card{width:100%;max-width:360px;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:28px 26px;}
+  .auth-card h2{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0 0 8px;font-weight:600;color:var(--paper);}
+  .auth-card p{color:var(--ink-muted);font-size:13px;line-height:1.5;margin:0 0 20px;}
+  .auth-card input[type=password]{width:100%;background:var(--navy);border:1px solid var(--line-blue-soft);color:var(--ink);border-radius:var(--radius);padding:11px 12px;font-size:14px;margin-bottom:12px;}
+  .auth-remember{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12.5px;color:var(--ink-muted);}
+  .auth-submit{width:100%;background:var(--amber);color:var(--navy-deep);border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;padding:12px;border-radius:var(--radius);cursor:pointer;}
+  .auth-error{display:none;color:var(--coral);font-size:12.5px;margin-top:12px;}
+
+  /* ---- supply requests ---- */
+  .wrap{max-width:900px;}
+  .st-in_need{color:var(--coral);border-color:rgba(255,107,74,.5);background:rgba(255,107,74,.1);}
+  .st-low{color:var(--amber);border-color:rgba(245,169,63,.5);background:rgba(245,169,63,.1);}
+  .st-would_be_nice{color:var(--cyan);border-color:rgba(95,208,224,.45);background:rgba(95,208,224,.08);}
+  .st-ordered{color:#B9A6FF;border-color:rgba(185,166,255,.5);background:rgba(185,166,255,.1);}
+  .st-completed{color:var(--green);border-color:rgba(111,211,154,.45);background:rgba(111,211,154,.08);}
+  .st-not_purchasing,.st-return{color:var(--ink-muted);border-color:rgba(143,179,204,.4);background:rgba(143,179,204,.06);}
+
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0 4px;}
+  .toolbar input[type=search]{flex:1;min-width:200px;width:auto;background:var(--navy);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:9px 12px;font-size:14.5px;}
+  .filters{margin:10px 0 14px;}
+
+  .srow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:12px 14px;}
+  .srow:hover{border-color:var(--line-blue);}
+  .srow h3{margin:0 0 4px;font-size:15.5px;font-weight:600;line-height:1.35;}
+  .srow h3 a{color:var(--paper);text-decoration:none;}
+  .srow h3 a:hover{color:var(--cyan);}
+  .srow .right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+  .srow .note{font-size:13px;color:var(--ink-muted);margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;}
+  @media (max-width:600px){ .srow{grid-template-columns:1fr;} .srow .right{justify-content:flex-start;} }
+  .buy{font-size:12.5px;font-weight:600;text-decoration:none;padding:5px 10px;border-radius:var(--radius);border:1px solid var(--line-blue);color:var(--ink);white-space:nowrap;background:var(--navy);}
+  .buy:hover{border-color:var(--cyan);color:var(--cyan);}
+  .buy.has{border-color:var(--amber);color:var(--amber);}
+  .buy.done-btn{cursor:pointer;font-family:inherit;color:var(--green);border-color:rgba(111,211,154,.5);}
+  .buy.done-btn:hover{background:rgba(111,211,154,.1);}
+  .quick{background:var(--navy);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:5px 6px;font-size:12.5px;width:auto;}
+  .more{display:block;margin:14px auto 0;}
+  .count-note{font-size:12.5px;color:var(--ink-muted);margin:0 0 10px;}
+
+  /* urgency picker */
+  .urg{display:flex;gap:8px;flex-wrap:wrap;}
+  .urg label{cursor:pointer;flex:1;min-width:150px;}
+  .urg input{position:absolute;opacity:0;pointer-events:none;}
+  .urg .opt-card{display:block;border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:10px 12px;background:var(--navy);}
+  .urg .opt-card b{display:block;font-size:14px;}
+  .urg .opt-card span{font-size:12px;color:var(--ink-muted);}
+  .urg input:checked + .opt-card{border-color:var(--amber);background:rgba(245,169,63,.08);}
+  .urg input:focus-visible + .opt-card{outline:2px solid var(--cyan);outline-offset:2px;}
+
+  .link-row{display:flex;gap:8px;}
+  .link-row input{flex:1;}
+  .link-row .btn{white-space:nowrap;}
+  @media (max-width:560px){ .link-row{flex-direction:column;} }
+
+  /* bought-before suggestions */
+  .sugg{margin-top:10px;border:1px solid var(--line-blue-soft);border-left:3px solid var(--green);background:rgba(111,211,154,.05);border-radius:var(--radius);padding:10px 12px;display:none;}
+  .sugg.show{display:block;}
+  .sugg.warn{border-left-color:var(--amber);background:rgba(245,169,63,.06);}
+  .sugg h4{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);font-family:'IBM Plex Mono',monospace;font-weight:500;}
+  .sugg ul{list-style:none;margin:0;padding:0;}
+  .sugg li{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(47,102,144,.35);font-size:14px;flex-wrap:wrap;}
+  .sugg li:first-child{border-top:none;}
+  .sugg li .nm{flex:1;min-width:160px;}
+  .sugg li .nm small{color:var(--ink-muted);font-size:12px;margin-left:4px;}
+  .sugg li .acts{display:flex;gap:6px;}
+
+  dl.kv{display:grid;grid-template-columns:150px 1fr;gap:8px 14px;margin:16px 0 0;font-size:14.5px;}
+  dl.kv dt{color:var(--ink-muted);font-size:13px;padding-top:1px;}
+  dl.kv dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;}
+  @media (max-width:560px){ dl.kv{grid-template-columns:1fr;gap:2px;} dl.kv dd{margin-bottom:8px;} }
+  .dnote{margin-top:14px;border:1px solid rgba(245,169,63,.45);padding:10px 12px;border-radius:var(--radius);font-size:14px;white-space:pre-wrap;}
+  .dnote b{color:var(--amber);font-size:12px;display:block;margin-bottom:2px;}
+  .success{border-left:3px solid var(--green);}
+  .name-ask{position:fixed;inset:0;background:rgba(5,15,25,.8);display:none;align-items:center;justify-content:center;z-index:3000;padding:16px;}
+  .name-ask.open{display:flex;}
+  .name-ask .card{width:100%;max-width:360px;background:var(--navy-card);border:1px solid var(--line-blue);border-radius:var(--radius);padding:22px;}
+  .name-ask h2{font-family:'Space Grotesk',sans-serif;font-size:19px;margin:0 0 6px;color:var(--paper);}
+  .name-ask p{color:var(--ink-muted);font-size:13px;line-height:1.5;margin:0 0 14px;}
+  .name-ask input{width:100%;background:var(--navy);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:10px 12px;font-size:15px;margin-bottom:14px;}
+  .you{display:flex;align-items:center;gap:6px;}
+  .you input{width:130px;background:var(--navy);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:4px 8px;font-size:12.5px;font-family:'Inter',sans-serif;color:var(--ink);}
+  .you input.need{border-color:var(--coral);box-shadow:0 0 0 2px rgba(255,107,74,.3);}
+  .buy.again-btn{cursor:pointer;font-family:inherit;color:var(--amber);border-color:rgba(245,169,63,.5);}
+  .buy.again-btn:hover{background:rgba(245,169,63,.1);}
+  .reopen{margin-top:14px;border:1px solid rgba(245,169,63,.45);background:rgba(245,169,63,.05);padding:14px;border-radius:var(--radius);}
+  .act-list{list-style:none;margin:0;padding:0;}
+  .act-list li{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-top:1px solid var(--line-blue-soft);font-size:14px;flex-wrap:wrap;}
+  .act-list li:first-child{border-top:none;}
+  .act-list .when{color:var(--ink-muted);font-size:12px;margin-left:auto;white-space:nowrap;}
+  .ev .body a{color:var(--cyan);overflow-wrap:anywhere;}
+</style>
+</head>
+<body class="locked">
+<script src="../auth.js"></script>
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <h2>Enter passphrase</h2>
+    <p>Staff access only. Ask your director for the current passphrase.</p>
+    <input type="password" id="authPassword" placeholder="Passphrase" autocomplete="off">
+    <label class="auth-remember"><input type="checkbox" id="authRemember" checked> Remember this device</label>
+    <button class="auth-submit" id="authSubmit">Enter</button>
+    <div class="auth-error" id="authError">That passphrase didn't match. Try again.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="topbar">
+    <a href="../">← Staff Portal</a>
+    <span class="spacer"></span>
+    <label class="you" for="youName">You: <input type="text" id="youName" maxlength="60" placeholder="your name" autocomplete="name"></label>
+    <span id="directorArea"></span>
+    <button class="link" id="lockLink">🔒 Lock</button>
+  </div>
+  <main id="view"></main>
+</div>
+
+<div class="name-ask" id="nameAsk" role="dialog" aria-modal="true" aria-labelledby="nameAskTitle"><div class="card">
+  <h2 id="nameAskTitle">What's your name?</h2>
+  <p>Changes are logged with who made them. You only need to enter this once on this device.</p>
+  <input type="text" id="nameAskInput" maxlength="60" autocomplete="name" placeholder="Your name">
+  <div class="actions"><button class="btn primary" id="nameAskOk">Continue</button><button class="btn" id="nameAskCancel">Cancel</button></div>
+</div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var STATUS = {in_need:'In Need', low:'Low', would_be_nice:'Would Be Nice', ordered:'Ordered', completed:'Completed', not_purchasing:'Not Purchasing', 'return':'Return'};
+  var ORDER = ['in_need','low','would_be_nice','ordered','completed','not_purchasing','return'];
+  var URGENCY = [
+    {key:'in_need', label:'In Need', hint:'Out, or about to run out'},
+    {key:'low', label:'Low', hint:'Running low, order soon'},
+    {key:'would_be_nice', label:'Would Be Nice', hint:'Not urgent'}
+  ];
+  var NAME_KEY = 'staffportal:name', OWNER_KEY = 'staffportal:ownerKey', FILTER_KEY = 'staffportal:supplyFilter';
+  var view = document.getElementById('view');
+  var state = { owner:false, rows:[], filter: lsGet(FILTER_KEY) || 'open', q:'', limit:60 };
+
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){} }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function pill(st){ return '<span class="pill st-' + esc(st) + '">' + esc(STATUS[st] || st) + '</span>'; }
+  function fmtDate(d){
+    if(!d) return '';
+    var p = d.split('-').map(Number), dt = new Date(p[0], p[1]-1, p[2]);
+    return dt.toLocaleDateString(undefined, {month:'short', day:'numeric', year: p[0] === new Date().getFullYear() ? undefined : 'numeric'});
+  }
+  function amazonSearch(q){ return 'https://www.amazon.com/s?k=' + encodeURIComponent(q); }
+  function toast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(function(){ t.classList.remove('show'); }, 2600); }
+  function isOpen(s){ return s === 'in_need' || s === 'low' || s === 'would_be_nice'; }
+  function linkify(s){ return esc(s).replace(/https?:\/\/[^\s<]+/g, function(u){ return '<a href="' + u + '" target="_blank" rel="noopener">' + (u.length > 60 ? u.slice(0, 57) + '…' : u) + '</a>'; }); }
+
+  function headers(extra){
+    var h = extra || {};
+    h['x-staff-key'] = getStaffKey();
+    var ok = lsGet(OWNER_KEY); if(ok) h['x-owner-key'] = ok;
+    return h;
+  }
+  function api(method, url, body){
+    var opts = { method: method, headers: headers(body ? {'Content-Type':'application/json'} : {}) };
+    if(body) opts.body = JSON.stringify(body);
+    return fetch(url, opts).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(d){
+        if(!r.ok) throw new Error(d.error || ('Request failed (' + r.status + ')'));
+        return d;
+      });
+    });
+  }
+
+  /* ---------- director (owner) mode: same key as the Issue Tracker ---------- */
+  function renderDirector(){
+    var a = document.getElementById('directorArea');
+    a.innerHTML = state.owner ? '<span class="director-badge">Director</span> <button class="link" id="ownerOut">Sign out director</button>' : '<button class="link" id="ownerIn">Director sign-in</button>';
+    var i = document.getElementById('ownerIn'), o = document.getElementById('ownerOut');
+    if(i) i.onclick = function(){
+      var k = prompt('Director key (the OWNER_KEY set on the server):');
+      if(!k) return;
+      fetch('/api/issues/owner-check', {headers:{'x-owner-key':k}}).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); }).then(function(x){
+        if(x.ok){ lsSet(OWNER_KEY, k); state.owner = true; renderDirector(); route(); toast('Signed in as director'); }
+        else alert(x.d.error || "That key didn't match.");
+      });
+    };
+    if(o) o.onclick = function(){ lsSet(OWNER_KEY, null); state.owner = false; renderDirector(); route(); };
+  }
+
+  /* ---------- list ---------- */
+  var FILTERS = [
+    {key:'open', label:'Needed', test:function(r){ return isOpen(r.status); }},
+    {key:'ordered', label:'Ordered', test:function(r){ return r.status === 'ordered'; }},
+    {key:'completed', label:'Completed', test:function(r){ return r.status === 'completed'; }},
+    {key:'not', label:'Not purchasing', test:function(r){ return r.status === 'not_purchasing' || r.status === 'return'; }},
+    {key:'all', label:'All', test:function(){ return true; }}
+  ];
+  function renderList(){
+    view.innerHTML = '<div class="head-row"><div><h1>Supply Requests</h1><p class="sub">Running low on something, or need a new material for a project? Request it here. SK gets an email right away, with links to anything we\'ve bought before.</p></div><div class="actions"><a class="btn" href="#activity">Activity log</a><a class="btn primary" href="#new">+ Request a supply</a></div></div><div id="listBody" class="meta">Loading…</div>';
+    api('GET', '/api/supplies').then(function(d){
+      state.rows = d.rows || d.requests; state.owner = d.owner; renderDirector(); drawList();
+    }).catch(showLoadError);
+  }
+  function matchesQ(r){
+    if(!state.q) return true;
+    var hay = (r.item_name + ' ' + r.purpose + ' ' + r.requested_by + ' ' + r.notes).toLowerCase();
+    return state.q.toLowerCase().split(/\s+/).every(function(w){ return hay.indexOf(w) >= 0; });
+  }
+  function buyButton(r){
+    if(r.link) return '<a class="buy has" href="' + esc(r.link) + '" target="_blank" rel="noopener">Product link ↗</a>';
+    if(r.prev_link) return '<a class="buy has" href="' + esc(r.prev_link) + '" target="_blank" rel="noopener" title="Bought before: ' + esc(r.prev_name) + ' (' + esc(fmtDate(r.prev_date)) + ')">Buy again ↗</a>';
+    if(isOpen(r.status)) return '<a class="buy" href="' + amazonSearch(r.item_name) + '" target="_blank" rel="noopener">Search Amazon ↗</a>';
+    return '';
+  }
+  function canComplete(r){ return isOpen(r.status) || r.status === 'ordered'; }
+  function myName(){ var i = document.getElementById('youName'); return (i && i.value.trim()) || lsGet(NAME_KEY) || ''; }
+  function saveName(n){ lsSet(NAME_KEY, n); var y = document.getElementById('youName'); if(y){ y.value = n; y.classList.remove('need'); } }
+  // Every change is logged with a name. If we don't have one yet, ask for it right here (small dialog), then carry on.
+  function withName(go, cancel){
+    if(myName() || state.owner) return go();
+    var m = document.getElementById('nameAsk');
+    m.classList.add('open');
+    var input = document.getElementById('nameAskInput'); input.value = ''; setTimeout(function(){ input.focus(); }, 30);
+    function close(){ m.classList.remove('open'); document.getElementById('nameAskOk').onclick = document.getElementById('nameAskCancel').onclick = input.onkeydown = null; }
+    document.getElementById('nameAskOk').onclick = function(){
+      var n = input.value.trim(); if(!n){ input.focus(); return; }
+      saveName(n); close(); go();
+    };
+    input.onkeydown = function(e){ if(e.key === 'Enter') document.getElementById('nameAskOk').click(); if(e.key === 'Escape') document.getElementById('nameAskCancel').click(); };
+    document.getElementById('nameAskCancel').onclick = function(){ close(); if(cancel) cancel(); };
+  }
+  function setStatus(id, st, extra, done, onFail){
+    withName(function(){ doSetStatus(id, st, extra, done, onFail); }, onFail);
+  }
+  function doSetStatus(id, st, extra, done, onFail){
+    var body = {status: st, author: myName()}; if(extra) for(var k in extra) body[k] = extra[k];
+    return api('PATCH', '/api/supplies/' + id, body).then(function(){
+      state.rows.forEach(function(r){ if(r.id === id) r.status = st; });
+      toast(st === 'completed' ? 'Marked completed' : isOpen(st) ? 'Back on the Needed list' : 'Marked ' + STATUS[st]); if(done) done();
+    }).catch(function(e){ alert(e.message); if(onFail) onFail(); });
+  }
+  function markCompleted(id, done, onFail){ return setStatus(id, 'completed', null, done, onFail); }
+  function quickStatus(r){
+    if(!state.owner) return '';
+    return '<select class="quick" data-id="' + r.id + '" aria-label="Change status">' + ORDER.map(function(k){ return '<option value="' + k + '"' + (k === r.status ? ' selected' : '') + '>' + STATUS[k] + '</option>'; }).join('') + '</select>';
+  }
+  function drawList(){
+    var body = document.getElementById('listBody'); if(!body) return;
+    var f = FILTERS.filter(function(x){ return x.key === state.filter; })[0] || FILTERS[0];
+    var searched = state.rows.filter(matchesQ);
+    var tabs = '<div class="filters" role="tablist">' + FILTERS.map(function(x){
+      var n = searched.filter(x.test).length;
+      return '<button class="filter' + (x.key === f.key ? ' active' : '') + '" role="tab" aria-selected="' + (x.key === f.key) + '" data-f="' + x.key + '">' + x.label + '<span class="n">' + n + '</span></button>';
+    }).join('') + '</div>';
+    var rows = searched.filter(f.test);
+    if(f.key === 'open') rows.sort(function(a, b){ return (ORDER.indexOf(a.status) - ORDER.indexOf(b.status)) || b.date_added.localeCompare(a.date_added) || b.id - a.id; });
+    var shown = rows.slice(0, state.limit);
+    var html;
+    if(!rows.length){
+      html = '<div class="empty"><p>' + (state.q ? 'Nothing matches "' + esc(state.q) + '" here.' : (f.key === 'open' ? 'Nothing is needed right now.' : 'Nothing in "' + esc(f.label) + '".')) + '</p><a class="btn primary" href="#new' + (state.q ? '?' + encodeURIComponent(state.q) : '') + '">Request ' + (state.q ? '"' + esc(state.q) + '"' : 'a supply') + '</a></div>';
+    } else {
+      html = '<div class="list">' + shown.map(function(r){
+        var bits = [];
+        if(r.quantity) bits.push('Qty: ' + esc(r.quantity));
+        if(r.purpose) bits.push(esc(r.purpose));
+        bits.push((r.requested_by ? esc(r.requested_by) : 'Unknown') + ', ' + esc(fmtDate(r.date_added)));
+        return '<div class="srow"><div><h3><a href="#' + r.id + '">' + esc(r.item_name) + '</a></h3><div class="meta">' + bits.join(' · ') + '</div>' +
+          (r.notes ? '<div class="note">' + esc(r.notes) + '</div>' : '') + '</div>' +
+          '<div class="right">' + buyButton(r) + (state.owner ? quickStatus(r) : (canComplete(r) ? '<button class="buy done-btn" data-done="' + r.id + '">✓ Mark completed</button>' : '') + (r.status === 'completed' ? '<button class="buy again-btn" data-again="' + r.id + '">↺ Need again</button>' : '') + pill(r.status)) + '</div></div>';
+      }).join('') + '</div>' + (rows.length > shown.length ? '<button class="btn more" id="moreBtn">Show more (' + (rows.length - shown.length) + ' left)</button>' : '');
+    }
+    var hadFocus = document.activeElement && document.activeElement.id === 'q';
+    body.className = '';
+    body.innerHTML = '<div class="toolbar"><input type="search" id="q" placeholder="Search items, purpose, names…" value="' + esc(state.q) + '" aria-label="Search supply requests"></div>' + tabs + html;
+    var q = document.getElementById('q');
+    if(hadFocus){ q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+    q.oninput = function(){ state.q = q.value.trim(); state.limit = 60; clearTimeout(drawList._t); drawList._t = setTimeout(drawList, 120); };
+    body.querySelectorAll('.filter').forEach(function(b){ b.onclick = function(){ state.filter = b.getAttribute('data-f'); state.limit = 60; lsSet(FILTER_KEY, state.filter); drawList(); }; });
+    var more = document.getElementById('moreBtn'); if(more) more.onclick = function(){ state.limit += 100; drawList(); };
+    body.querySelectorAll('button[data-done]').forEach(function(b){ b.onclick = function(){ b.disabled = true; markCompleted(Number(b.getAttribute('data-done')), drawList, function(){ b.disabled = false; }); }; });
+    body.querySelectorAll('button[data-again]').forEach(function(b){ b.onclick = function(){ location.hash = '#' + b.getAttribute('data-again') + '?again'; }; });
+    body.querySelectorAll('select.quick').forEach(function(s){
+      s.onchange = function(){
+        var id = Number(s.getAttribute('data-id')), st = s.value;
+        s.disabled = true;
+        api('PATCH', '/api/supplies/' + id, {status: st, author: myName() || 'Director'}).then(function(){
+          state.rows.forEach(function(r){ if(r.id === id) r.status = st; });
+          toast('Marked ' + STATUS[st]); drawList();
+        }).catch(function(e){ alert(e.message); s.disabled = false; });
+      };
+    });
+  }
+
+  /* ---------- bought-before / already-requested lookup ---------- */
+  function suggestions(boxId, getQuery, onUseLink, excludeId){
+    var box = document.getElementById(boxId), last = '', timer;
+    function run(){
+      var q = getQuery();
+      if(q === last) return; last = q;
+      if(q.length < 3){ box.className = 'sugg'; box.innerHTML = ''; return; }
+      api('GET', '/api/supplies/similar?q=' + encodeURIComponent(q) + (excludeId ? '&exclude=' + excludeId : '')).then(function(d){
+        if(q !== last) return;
+        var html = '';
+        if(d.open.length){
+          html += '<h4>Already requested</h4><ul>' + d.open.map(function(o){
+            return '<li><span class="nm"><a href="#' + o.id + '">' + esc(o.item_name) + '</a><small>' + esc(o.requested_by || '') + ', ' + esc(fmtDate(o.date_added)) + '</small></span>' + pill(o.status) + '</li>';
+          }).join('') + '</ul>';
+        }
+        if(d.bought.length){
+          html += '<h4' + (d.open.length ? ' style="margin-top:10px"' : '') + '>Bought before</h4><ul>' + d.bought.map(function(b){
+            var acts = b.link ? '<a class="buy has" href="' + esc(b.link) + '" target="_blank" rel="noopener">View ↗</a>' + (onUseLink ? '<button type="button" class="btn small" data-link="' + esc(b.link) + '">Use this link</button>' : '') : '<span class="meta">no link saved</span>';
+            return '<li><span class="nm">' + esc(b.item_name) + '<small>last ' + esc(fmtDate(b.last_date)) + (b.times > 1 ? ', ' + b.times + ' times' : '') + '</small></span><span class="acts">' + acts + '</span></li>';
+          }).join('') + '</ul>';
+        }
+        box.innerHTML = html;
+        box.className = 'sugg' + (html ? ' show' : '') + (d.open.length && !d.bought.length ? ' warn' : '');
+        box.querySelectorAll('button[data-link]').forEach(function(b){ b.onclick = function(){ onUseLink(b.getAttribute('data-link')); }; });
+      }).catch(function(){});
+    }
+    return { trigger: function(){ clearTimeout(timer); timer = setTimeout(run, 250); }, now: run };
+  }
+
+  /* ---------- new request (same fields as the materials sheet) ---------- */
+  function datalists(){
+    var purposes = {}, names = {};
+    state.rows.forEach(function(r){ if(r.purpose && r.purpose.length < 40) purposes[r.purpose.trim()] = (purposes[r.purpose.trim()] || 0) + 1; if(r.requested_by) names[r.requested_by.trim()] = 1; });
+    var top = Object.keys(purposes).filter(function(p){ return !/^n\/?a$/i.test(p); }).sort(function(a, b){ return purposes[b] - purposes[a]; }).slice(0, 30);
+    return '<datalist id="dlPurpose">' + top.map(function(p){ return '<option value="' + esc(p) + '">'; }).join('') + '</datalist>' +
+      '<datalist id="dlNames">' + Object.keys(names).sort().map(function(n){ return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>';
+  }
+  function renderNew(prefill){
+    var ensure = state.rows.length ? Promise.resolve() : api('GET', '/api/supplies').then(function(d){ state.rows = d.requests; state.owner = d.owner; renderDirector(); }).catch(function(){});
+    ensure.then(function(){ drawNew(prefill || ''); });
+  }
+  function drawNew(prefill){
+    view.innerHTML = '<a class="back" href="#">← All requests</a><h1>Request a supply</h1><p class="sub">One item per request. If we\'ve bought it before, it\'ll show up below the item name so you can reuse the link.</p>' +
+      '<div class="panel">' +
+      '<div class="field"><label class="f" for="nItem">Item name</label><input type="text" id="nItem" maxlength="300" placeholder="e.g. hot glue sticks (mini)" value="' + esc(prefill) + '" autocomplete="off"><div id="nSugg" class="sugg" aria-live="polite"></div></div>' +
+      '<div class="field"><span class="f">How urgent?</span><div class="urg" role="radiogroup">' + URGENCY.map(function(u, i){
+        return '<label><input type="radio" name="nUrg" value="' + u.key + '"' + (i === 0 ? ' checked' : '') + '><span class="opt-card"><b>' + u.label + '</b><span>' + u.hint + '</span></span></label>';
+      }).join('') + '</div></div>' +
+      '<div class="two"><div class="field"><label class="f" for="nQty">Quantity <span class="opt">(optional)</span></label><input type="text" id="nQty" maxlength="80" placeholder="e.g. 2 packs, 1, we have none left"></div>' +
+      '<div class="field"><label class="f" for="nPurpose">Purpose <span class="opt">(optional)</span></label><input type="text" id="nPurpose" maxlength="200" list="dlPurpose" placeholder="Project, mission, or General"></div></div>' +
+      '<div class="field"><label class="f" for="nLink">Amazon link <span class="opt">(optional)</span></label><div class="link-row"><input type="text" id="nLink" maxlength="2000" inputmode="url" placeholder="Paste a link if you found one"><a class="btn" id="nSearch" href="#" target="_blank" rel="noopener">Search Amazon ↗</a></div><div class="hint">Search opens Amazon in a new tab. Copy the product page\'s address and paste it here.</div></div>' +
+      '<div class="field"><label class="f" for="nNotes">Notes <span class="opt">(optional)</span></label><textarea id="nNotes" maxlength="5000" placeholder="Size, brand, color, why the current ones don\'t work…"></textarea></div>' +
+      '<div class="field"><label class="f" for="nName">Facilitator who requested</label><input type="text" id="nName" maxlength="60" list="dlNames" autocomplete="name" value="' + esc(lsGet(NAME_KEY) || '') + '" placeholder="Your name"></div>' +
+      datalists() +
+      '<div class="actions"><button class="btn primary" id="nSubmit">Submit request</button><a class="btn" href="#">Cancel</a><span class="err" id="nErr"></span></div></div>';
+    var item = document.getElementById('nItem'), link = document.getElementById('nLink'), search = document.getElementById('nSearch');
+    var sg = suggestions('nSugg', function(){ return item.value.trim(); }, function(u){ link.value = u; toast('Link added'); link.focus(); });
+    function syncSearch(){ search.href = amazonSearch(item.value.trim() || 'craft supplies'); }
+    item.oninput = function(){ syncSearch(); sg.trigger(); };
+    syncSearch(); if(prefill) sg.now();
+    item.focus();
+    document.getElementById('nSubmit').onclick = function(){
+      var btn = this, err = document.getElementById('nErr');
+      var name = document.getElementById('nName').value.trim();
+      var body = {
+        item_name: item.value.trim(),
+        status: (document.querySelector('input[name=nUrg]:checked') || {}).value,
+        quantity: document.getElementById('nQty').value.trim(),
+        purpose: document.getElementById('nPurpose').value.trim(),
+        link: link.value.trim(),
+        notes: document.getElementById('nNotes').value.trim(),
+        requested_by: name
+      };
+      if(!body.item_name){ err.textContent = 'Add the item name.'; item.focus(); return; }
+      if(!name){ err.textContent = 'Add your name.'; document.getElementById('nName').focus(); return; }
+      lsSet(NAME_KEY, name); var yb = document.getElementById('youName'); if(yb && !yb.value) yb.value = name;
+      btn.disabled = true; btn.textContent = 'Submitting…'; err.textContent = '';
+      api('POST', '/api/supplies', body).then(function(d){ state.rows = []; drawDone(d.id, body); })
+        .catch(function(e){ err.textContent = e.message; btn.disabled = false; btn.textContent = 'Submit request'; });
+    };
+  }
+  function drawDone(id, body){
+    window.scrollTo(0, 0);
+    view.innerHTML = '<a class="back" href="#">← All requests</a><div class="panel success"><h2 style="font-family:\'Space Grotesk\',sans-serif;margin:0 0 6px">Request sent</h2><p class="sub" style="margin-bottom:16px">' + esc(body.item_name) + ' (' + esc(STATUS[body.status]) + '). SK gets an email about it.</p>' +
+      '<div class="actions"><a class="btn primary" href="#new" id="another">Request another item</a><a class="btn" href="#' + id + '">View this request</a><a class="btn" href="#">All requests</a></div></div>';
+    document.getElementById('another').onclick = function(e){ e.preventDefault(); if(location.hash === '#new') renderNew(); else location.hash = '#new'; };
+  }
+
+  /* ---------- detail ---------- */
+  var EV_TEXT = {
+    created: function(e){ return 'requested this' + (e.to_status ? ' as ' + pill(e.to_status) : ''); },
+    status: function(e){ return (e.to_status === 'completed' ? 'marked it ' : isOpen(e.to_status) && !isOpen(e.from_status) ? 'marked it needed again ' : 'changed status ') + pill(e.from_status) + ' → ' + pill(e.to_status); },
+    edit: function(e){ return esc(e.body.toLowerCase()); },
+    link: function(){ return 'updated the product link'; },
+    note: function(){ return 'updated the director note'; }
+  };
+  function evWhen(ts){ return new Date(ts).toLocaleString(undefined, {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}); }
+  function timeline(r, events){
+    var items = [];
+    if(r.source === 'sheet') items.push('<li class="ev"><div class="who"><b>' + esc(r.requested_by || 'Someone') + '</b> added this to the materials sheet<span class="when">' + esc(new Date(r.created_at).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'})) + '</span></div><div class="meta" style="margin-top:2px">Imported from sheet row ' + esc(r.sheet_row) + '</div></li>');
+    events.forEach(function(e){
+      var body = '';
+      if(e.kind === 'status' && e.body) body = '<div class="body">' + esc(e.body) + '</div>';
+      if(e.kind === 'link' && /^https?:/.test(e.body)) body = '<div class="body"><a href="' + esc(e.body) + '" target="_blank" rel="noopener">' + esc(e.body) + '</a></div>';
+      if(e.kind === 'note') body = '<div class="body">' + esc(e.body) + '</div>';
+      items.push('<li class="ev' + (e.is_owner ? ' owner' : '') + (e.kind === 'status' ? ' status' : '') + '"><div class="who"><b>' + esc(e.author || 'Someone') + '</b>' + (e.is_owner ? '<span class="tag">Director</span>' : '') + ' ' + (EV_TEXT[e.kind] ? EV_TEXT[e.kind](e) : esc(e.kind)) + '<span class="when">' + esc(evWhen(e.created_at)) + '</span></div>' + body + '</li>');
+    });
+    return items.length ? '<h3 class="sec">Activity</h3><ul class="timeline">' + items.join('') + '</ul>' : '';
+  }
+  function reopenForm(){
+    return '<div class="reopen" id="reopenBox"><span class="f">Need it again</span><p class="meta" style="margin:0 0 10px">Puts this back on the Needed list (no need to create a new request) and emails SK.</p>' +
+      '<div class="field"><div class="urg">' + URGENCY.map(function(u, i){ return '<label><input type="radio" name="rUrg" value="' + u.key + '"' + (i === 0 ? ' checked' : '') + '><span class="opt-card"><b>' + u.label + '</b><span>' + u.hint + '</span></span></label>'; }).join('') + '</div></div>' +
+      '<div class="two"><div class="field"><label class="f" for="rWhy">Note <span class="opt">(optional)</span></label><input type="text" id="rWhy" maxlength="500" placeholder="e.g. Ran out again, need 2 boxes this time"></div>' +
+      '<div class="field"><label class="f" for="rName">Your name</label><input type="text" id="rName" maxlength="60" autocomplete="name" value="' + esc(myName()) + '" placeholder="So the log shows who"></div></div>' +
+      '<div class="actions"><button class="btn primary" id="rGo">Mark as needed</button><button class="btn" id="rCancel">Cancel</button></div></div>';
+  }
+  function renderDetail(id, openReopen){
+    view.innerHTML = '<a class="back" href="#">← All requests</a><p class="meta">Loading…</p>';
+    api('GET', '/api/supplies/' + encodeURIComponent(id)).then(function(d){
+      state.owner = d.owner; renderDirector();
+      var r = d.request;
+      var kv = [['Date added', fmtDate(r.date_added)], ['Quantity', r.quantity], ['Purpose', r.purpose], ['Requested by', r.requested_by]];
+      var dl = '<dl class="kv">' + kv.filter(function(x){ return x[1]; }).map(function(x){ return '<dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd>'; }).join('') +
+        (r.notes ? '<dt>Notes</dt><dd>' + linkify(r.notes) + '</dd>' : '') +
+        (r.link ? '<dt>Product link</dt><dd><a href="' + esc(r.link) + '" target="_blank" rel="noopener">' + esc(r.link) + '</a></dd>' : '') + '</dl>';
+      var src = state.owner && r.notify_status ? '<p class="notify">Last email: ' + esc(r.notify_status) + '</p>' : '';
+      var buy = '<div class="actions" style="margin-top:16px">' + (r.link ? '<a class="btn primary" href="' + esc(r.link) + '" target="_blank" rel="noopener">Open product link ↗</a>' : '') + '<a class="btn" href="' + esc(d.amazon_search) + '" target="_blank" rel="noopener">Search Amazon ↗</a>' + (!state.owner && canComplete(r) ? '<button class="btn" id="doneBtn">✓ Mark completed</button>' : '') + (r.status === 'completed' ? '<button class="btn" id="againBtn">↺ Need it again</button>' : '') + '<button class="btn" id="editBtn">Edit</button></div>' + '<div id="reopenSlot"></div>';
+      view.innerHTML = '<a class="back" href="#">← All requests</a>' +
+        '<div class="panel" id="reqPanel"><div class="d-head"><div><h2>' + esc(r.item_name) + '</h2></div>' + pill(r.status) + '</div>' + dl +
+        (r.director_note ? '<div class="dnote"><b>DIRECTOR NOTE</b>' + esc(r.director_note) + '</div>' : '') + buy + src + '</div>' +
+        '<div id="dSugg" class="sugg"></div>' +
+        (state.owner ? directorPanel(r) : '') + timeline(r, d.events || []);
+      document.getElementById('editBtn').onclick = function(){ renderEdit(r); };
+      var db = document.getElementById('doneBtn'); if(db) db.onclick = function(){ db.disabled = true; markCompleted(r.id, function(){ state.rows = []; renderDetail(r.id); }, function(){ db.disabled = false; }); };
+      var ab = document.getElementById('againBtn');
+      function showReopen(){
+        var slot = document.getElementById('reopenSlot'); slot.innerHTML = reopenForm(); ab.style.display = 'none';
+        document.getElementById('rCancel').onclick = function(){ slot.innerHTML = ''; ab.style.display = ''; };
+        document.getElementById('rGo').onclick = function(){
+          var go = this, rn = document.getElementById('rName').value.trim();
+          if(rn) saveName(rn);
+          go.disabled = true;
+          setStatus(r.id, (document.querySelector('input[name=rUrg]:checked') || {}).value || 'in_need', {reason: document.getElementById('rWhy').value.trim()},
+            function(){ state.rows = []; renderDetail(r.id); }, function(){ go.disabled = false; });
+        };
+      }
+      if(ab){ ab.onclick = showReopen; if(openReopen) showReopen(); }
+      var sg = suggestions('dSugg', function(){ return r.item_name; }, state.owner ? function(u){ var l = document.getElementById('oLink'); if(l){ l.value = u; l.focus(); toast('Link added, click Save'); } } : null, r.id);
+      sg.now();
+      if(state.owner) bindDirector(r);
+    }).catch(showLoadError);
+  }
+  function directorPanel(r){
+    return '<h3 class="sec">Director</h3><div class="panel"><div class="field"><span class="f">Status</span><div class="status-pick">' + ORDER.map(function(k){
+      return '<label><input type="radio" name="oStatus" value="' + k + '"' + (k === r.status ? ' checked' : '') + '>' + pill(k) + '</label>';
+    }).join('') + '</div></div>' +
+    '<div class="field"><label class="f" for="oLink">Purchase link <span class="opt">(saved so it shows as "bought before" next time)</span></label><input type="text" id="oLink" maxlength="2000" value="' + esc(r.link) + '" placeholder="https://www.amazon.com/dp/…"></div>' +
+    '<div class="field"><label class="f" for="oNote">Note to staff <span class="opt">(optional)</span></label><textarea id="oNote" maxlength="2000" style="min-height:70px" placeholder="e.g. Arriving Thursday, or: use the craft foam in the back closet">' + esc(r.director_note) + '</textarea></div>' +
+    '<div class="actions"><button class="btn primary" id="oSave">Save</button><span class="err" id="oErr"></span></div></div>';
+  }
+  function bindDirector(r){
+    document.getElementById('oSave').onclick = function(){
+      var err = document.getElementById('oErr'), btn = this;
+      var st = (document.querySelector('input[name=oStatus]:checked') || {}).value || r.status;
+      btn.disabled = true; err.textContent = '';
+      api('PATCH', '/api/supplies/' + r.id, {status: st, author: myName() || 'Director', link: document.getElementById('oLink').value.trim(), director_note: document.getElementById('oNote').value.trim()})
+        .then(function(){ toast('Saved'); state.rows = []; renderDetail(r.id); })
+        .catch(function(e){ err.textContent = e.message; btn.disabled = false; });
+    };
+  }
+  function renderEdit(r){
+    var p = document.getElementById('reqPanel');
+    var canUrg = isOpen(r.status);
+    p.innerHTML = '<div class="field"><label class="f" for="eItem">Item name</label><input type="text" id="eItem" maxlength="300" value="' + esc(r.item_name) + '"></div>' +
+      (canUrg ? '<div class="field"><span class="f">How urgent?</span><div class="urg">' + URGENCY.map(function(u){ return '<label><input type="radio" name="eUrg" value="' + u.key + '"' + (u.key === r.status ? ' checked' : '') + '><span class="opt-card"><b>' + u.label + '</b><span>' + u.hint + '</span></span></label>'; }).join('') + '</div></div>' : '') +
+      '<div class="two"><div class="field"><label class="f" for="eQty">Quantity</label><input type="text" id="eQty" maxlength="80" value="' + esc(r.quantity) + '"></div>' +
+      '<div class="field"><label class="f" for="ePurpose">Purpose</label><input type="text" id="ePurpose" maxlength="200" value="' + esc(r.purpose) + '"></div></div>' +
+      '<div class="field"><label class="f" for="eLink">Amazon link</label><input type="text" id="eLink" maxlength="2000" value="' + esc(r.link) + '"></div>' +
+      '<div class="field"><label class="f" for="eNotes">Notes</label><textarea id="eNotes" maxlength="5000">' + esc(r.notes) + '</textarea></div>' +
+      '<div class="field"><label class="f" for="eBy">Facilitator who requested</label><input type="text" id="eBy" maxlength="60" value="' + esc(r.requested_by) + '"></div>' +
+      '<div class="actions"><button class="btn primary" id="eSave">Save changes</button><button class="btn" id="eCancel">Cancel</button><span class="err" id="eErr"></span></div>';
+    document.getElementById('eCancel').onclick = function(){ renderDetail(r.id); };
+    document.getElementById('eSave').onclick = function(){
+      var body = { item_name: document.getElementById('eItem').value, quantity: document.getElementById('eQty').value, purpose: document.getElementById('ePurpose').value,
+        link: document.getElementById('eLink').value, notes: document.getElementById('eNotes').value, requested_by: document.getElementById('eBy').value };
+      var u = document.querySelector('input[name=eUrg]:checked'); if(u) body.status = u.value;
+      withName(function(){
+        body.author = myName();
+        api('PATCH', '/api/supplies/' + r.id, body).then(function(){ toast('Changes saved'); state.rows = []; renderDetail(r.id); })
+          .catch(function(e){ document.getElementById('eErr').textContent = e.message; });
+      });
+    };
+  }
+
+  /* ---------- activity log (all requests) ---------- */
+  function renderActivity(){
+    view.innerHTML = '<a class="back" href="#">← All requests</a><h1>Activity log</h1><p class="sub">Every request, status change, and edit, newest first.</p><div class="panel" id="actBody"><p class="meta">Loading…</p></div>';
+    api('GET', '/api/supplies/activity?limit=200').then(function(d){
+      state.owner = d.owner; renderDirector();
+      var b = document.getElementById('actBody');
+      if(!d.events.length){ b.innerHTML = '<p class="meta" style="margin:0">Nothing yet. Changes made in the portal will show up here.</p>'; return; }
+      b.innerHTML = '<ul class="act-list">' + d.events.map(function(e){
+        return '<li><b>' + esc(e.author || 'Someone') + '</b>' + (e.is_owner ? ' <span class="pill st-low" style="font-size:10.5px;padding:1px 7px">Director</span>' : '') + ' <span>' + (EV_TEXT[e.kind] ? EV_TEXT[e.kind](e) : esc(e.kind)) + '</span> <a href="#' + e.request_id + '">' + esc(e.item_name) + '</a>' + (e.kind === 'status' && e.body ? ' <span class="meta">“' + esc(e.body) + '”</span>' : '') + '<span class="when">' + esc(evWhen(e.created_at)) + '</span></li>';
+      }).join('') + '</ul>';
+    }).catch(showLoadError);
+  }
+
+  function showLoadError(e){
+    view.innerHTML = '<a class="back" href="#">← All requests</a><div class="empty"><p>' + esc(e.message) + '</p><button class="btn" onclick="location.reload()">Reload</button></div>';
+  }
+
+  /* ---------- routing: # (list), #new, #new?item, #<id> ---------- */
+  function route(){
+    if(document.body.classList.contains('locked')) return;
+    var h = location.hash.replace(/^#/, '');
+    window.scrollTo(0, 0);
+    if(h === 'new' || h.indexOf('new?') === 0) renderNew(decodeURIComponent(h.slice(4)));
+    else if(h === 'activity') renderActivity();
+    else if(/^\d+(\?again)?$/.test(h)) renderDetail(h.replace('?again', ''), /\?again$/.test(h));
+    else renderList();
+  }
+  window.addEventListener('hashchange', route);
+  // Handle in-page links (#new, #123, #) ourselves so embedded/sandboxed viewers don't treat them as external links.
+  window.addEventListener('click', function(ev){
+    var a = ev.target.closest ? ev.target.closest('a[href^="#"]') : null;
+    if(!a || ev.defaultPrevented || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;
+    ev.preventDefault(); ev.stopPropagation();
+    var h = a.getAttribute('href');
+    if(location.hash === h || (h === '#' && !location.hash)) route(); else location.hash = h;
+  }, true);
+  document.addEventListener('portal:unlocked', route);
+  document.addEventListener('DOMContentLoaded', function(){
+    state.owner = !!lsGet(OWNER_KEY); renderDirector();
+    var y = document.getElementById('youName'); y.value = lsGet(NAME_KEY) || '';
+    y.oninput = function(){ y.classList.remove('need'); lsSet(NAME_KEY, y.value.trim() || null); var n = document.getElementById('nName'); if(n && !n.value) n.value = y.value.trim(); };
+  });
+})();
+</script>
+</body>
+</html>
