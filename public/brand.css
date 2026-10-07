@@ -1,0 +1,14 @@
+/* Steamoji Kirkland branding shared by every Staff Portal page (white + blue, logo). */
+.brand-logo{width:44px;height:44px;flex:none;display:inline-block;vertical-align:middle;}
+.brand-logo.sm{width:30px;height:30px;}
+.brand-logo.auth{display:block;width:72px;height:72px;margin:0 auto 14px;}
+.eyebrow .brand-logo{margin-right:2px;}
+.topbar .brand{display:inline-flex;align-items:center;gap:10px;}
+.topbar .brand .brand-logo{width:38px;height:38px;}
+.auth-card{box-shadow:0 10px 30px rgba(11,42,85,.10);}
+.panel,.row,.srow,.project-card{box-shadow:0 1px 2px rgba(11,42,85,.05);}
+.btn.primary,.auth-submit{color:#fff !important;}
+/* status colors that need to stay distinct from the blue accent */
+.st-low,.s-in_progress{color:#B45F06 !important;border-color:rgba(180,95,6,.45) !important;background:rgba(180,95,6,.08) !important;}
+.sugg.warn{border-left-color:#B45F06;background:rgba(180,95,6,.06);}
+.toast{background:#0B2A55 !important;color:#fff !important;}

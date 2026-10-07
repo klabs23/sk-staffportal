@@ -4,23 +4,27 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Steamoji · Free-Time Idea Engine</title>
+<link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="theme-color" content="#1F5FBF">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy-deep:#0B2338;
-    --navy:#0E2A44;
-    --navy-card:#123356;
-    --navy-card-hi:#17436d;
-    --line-blue:#2F6690;
-    --line-blue-soft:#1E4A70;
-    --paper:#DCEEFB;
-    --ink:#F3F7FA;
-    --ink-muted:#8FB3CC;
-    --amber:#F5A93F;
-    --amber-deep:#C9821B;
-    --coral:#FF6B4A;
-    --cyan:#5FD0E0;
+    --navy-deep:#F4F8FD;
+    --navy:#FFFFFF;
+    --navy-card:#FFFFFF;
+    --navy-card-hi:#EDF3FB;
+    --line-blue:#A9C1E0;
+    --line-blue-soft:#D6E3F2;
+    --paper:#0B2A55;
+    --ink:#172B45;
+    --ink-muted:#5B6F8A;
+    --amber:#1F5FBF;
+    --amber-deep:#174EA0;
+    --coral:#CB3732;
+    --cyan:#1769C9;
     --radius:2px;
   }
   *{box-sizing:border-box;}
@@ -32,8 +36,8 @@
       var(--navy-deep);
     background-color:var(--navy-deep);
     background-image:
-      linear-gradient(rgba(47,102,144,0.14) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(47,102,144,0.14) 1px, transparent 1px);
+      linear-gradient(rgba(31,95,191,0.056) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31,95,191,0.056) 1px, transparent 1px);
     background-size:28px 28px;
     color:var(--ink);
     font-family:'Inter',system-ui,sans-serif;
@@ -71,7 +75,7 @@
   }
   .panel:before{
     content:"";position:absolute;top:8px;left:8px;right:8px;bottom:8px;
-    border:1px dashed rgba(143,179,204,0.25);pointer-events:none;
+    border:1px dashed rgba(91,111,138,0.25);pointer-events:none;
   }
   .field{margin-bottom:22px;}
   .field:last-child{margin-bottom:0;}
@@ -98,7 +102,7 @@
   .pillar-btn:hover{border-color:var(--line-blue);}
   .pillar-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
   .pillar-btn.active{
-    background:rgba(245,169,63,0.12);
+    background:rgba(31,95,191,0.12);
     border-color:var(--amber);
   }
   .pillar-btn.active svg{stroke:var(--amber);}
@@ -126,7 +130,7 @@
     padding:7px 12px;border-radius:20px;cursor:pointer;
   }
   .chip:hover{border-color:var(--line-blue);}
-  .chip.active{background:rgba(245,169,63,0.14);border-color:var(--amber);color:var(--amber);}
+  .chip.active{background:rgba(31,95,191,0.14);border-color:var(--amber);color:var(--amber);}
   .custom-min{
     margin-top:10px;display:flex;align-items:center;gap:8px;
     font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-muted);
@@ -166,7 +170,7 @@
   @keyframes spin{to{transform:rotate(360deg);}}
   .loading-state strong{color:var(--paper);display:block;font-family:'Space Grotesk',sans-serif;font-size:15px;margin-bottom:6px;font-weight:600;}
   .error-note{
-    border:1px solid rgba(255,107,74,0.4);background:rgba(255,107,74,0.08);
+    border:1px solid rgba(203,55,50,0.4);background:rgba(203,55,50,0.08);
     border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;
     font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--coral);line-height:1.5;
   }
@@ -181,7 +185,7 @@
   }
   .cache-status a{color:var(--cyan);text-decoration:none;cursor:pointer;}
   .cache-status a:hover{text-decoration:underline;}
-  .badge.cached{background:rgba(95,208,224,0.15);color:var(--cyan);border:1px solid rgba(95,208,224,0.4);}
+  .badge.cached{background:rgba(23,105,201,0.15);color:var(--cyan);border:1px solid rgba(23,105,201,0.4);}
 
   .cache-panel{
     display:none;margin-top:10px;border:1px solid var(--line-blue-soft);border-radius:var(--radius);
@@ -204,8 +208,8 @@
     position:fixed;inset:0;z-index:999;
     display:flex;align-items:center;justify-content:center;
     background:
-      linear-gradient(rgba(47,102,144,0.14) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(47,102,144,0.14) 1px, transparent 1px);
+      linear-gradient(rgba(31,95,191,0.056) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31,95,191,0.056) 1px, transparent 1px);
     background-size:28px 28px;background-color:var(--navy-deep);
     padding:20px;
   }
@@ -237,11 +241,11 @@
     font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;
     padding:12px;border-radius:var(--radius);cursor:pointer;
   }
-  .auth-submit:hover{background:#ffb84f;}
+  .auth-submit:hover{background:#174EA0;}
   .auth-error{
     display:none;color:var(--coral);font-family:'IBM Plex Mono',monospace;font-size:11.5px;
-    margin-top:12px;padding:9px 11px;border:1px solid rgba(255,107,74,0.4);
-    background:rgba(255,107,74,0.08);border-radius:var(--radius);
+    margin-top:12px;padding:9px 11px;border:1px solid rgba(203,55,50,0.4);
+    background:rgba(203,55,50,0.08);border-radius:var(--radius);
   }
   .lock-link{
     font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);
@@ -262,7 +266,7 @@
     letter-spacing:.01em;
     transition:transform .1s, background .15s;
   }
-  .generate-btn:hover{background:#ffb84f;}
+  .generate-btn:hover{background:#174EA0;}
   .generate-btn:active{transform:scale(0.98);}
   .generate-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;}
 
@@ -309,9 +313,9 @@
     display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;
     text-transform:uppercase;padding:4px 8px;border-radius:20px;margin-bottom:10px;
   }
-  .badge.deepen{background:rgba(245,169,63,0.15);color:var(--amber);border:1px solid rgba(245,169,63,0.4);}
-  .badge.cross{background:rgba(255,107,74,0.15);color:var(--coral);border:1px solid rgba(255,107,74,0.4);}
-  .badge.bonus{background:rgba(95,208,224,0.15);color:var(--cyan);border:1px solid rgba(95,208,224,0.4);}
+  .badge.deepen{background:rgba(31,95,191,0.15);color:var(--amber);border:1px solid rgba(31,95,191,0.4);}
+  .badge.cross{background:rgba(203,55,50,0.15);color:var(--coral);border:1px solid rgba(203,55,50,0.4);}
+  .badge.bonus{background:rgba(23,105,201,0.15);color:var(--cyan);border:1px solid rgba(23,105,201,0.4);}
 
   .card h3{font-family:'Space Grotesk',sans-serif;font-size:18px;margin:0 0 12px;font-weight:600;color:var(--paper);}
   .kv{margin-bottom:11px;}
@@ -329,6 +333,7 @@
     border-top:1px dashed var(--line-blue-soft);padding-top:14px;line-height:1.6;
   }
 </style>
+<link rel="stylesheet" href="../brand.css">
 </head>
 <body class="locked">
 <script src="../auth.js"></script>
@@ -338,7 +343,7 @@
     <span class="corner tr" style="top:6px;right:6px;border-top:1.5px solid var(--line-blue);border-right:1.5px solid var(--line-blue);"></span>
     <span class="corner bl" style="bottom:6px;left:6px;border-bottom:1.5px solid var(--line-blue);border-left:1.5px solid var(--line-blue);"></span>
     <span class="corner br" style="bottom:6px;right:6px;border-bottom:1.5px solid var(--line-blue);border-right:1.5px solid var(--line-blue);"></span>
-    <p class="auth-eyebrow"><span class="dot"></span>STEAMOJI · STAFF ACCESS</p>
+    <p class="auth-eyebrow"><img class="brand-logo sm" src="../logo.png" alt="Steamoji Kirkland">STEAMOJI · STAFF ACCESS</p>
     <h2>Enter Passphrase</h2>
     <p class="sub">This tool is for Steamoji facilitators only. Ask your director for the current passphrase.</p>
     <input type="password" id="authPassword" placeholder="Passphrase" autocomplete="off">
@@ -348,7 +353,7 @@
   </div>
 </div>
 <div class="wrap">
-  <p class="eyebrow"><span class="dot"></span>STEAMOJI · FACILITATOR TOOL<span class="lock-link" id="lockLink">🔒 Lock</span></p>
+  <p class="eyebrow"><img class="brand-logo" src="../logo.png" alt="Steamoji Kirkland">STEAMOJI · FACILITATOR TOOL<span class="lock-link" id="lockLink">🔒 Lock</span></p>
   <h1>Free-Time Idea Engine</h1>
   <p class="sub">Set today's pillar, the maker's age and level, and time left on the clock — get 2–3 open-ended challenge cards to hand over, never a step-by-step answer.</p>
 

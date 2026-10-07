@@ -4,21 +4,25 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Steamoji Staff Portal</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1F5FBF">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy-deep:#0B2338; --navy:#0E2A44; --navy-card:#123356; --navy-card-hi:#17436d;
-    --line-blue:#2F6690; --line-blue-soft:#1E4A70; --paper:#DCEEFB; --ink:#F3F7FA;
-    --ink-muted:#8FB3CC; --amber:#F5A93F; --coral:#FF6B4A; --cyan:#5FD0E0; --radius:2px;
+    --navy-deep:#F4F8FD; --navy:#FFFFFF; --navy-card:#FFFFFF; --navy-card-hi:#EDF3FB;
+    --line-blue:#A9C1E0; --line-blue-soft:#D6E3F2; --paper:#0B2A55; --ink:#172B45;
+    --ink-muted:#5B6F8A; --amber:#1F5FBF; --coral:#CB3732; --cyan:#1769C9; --radius:2px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     background-color:var(--navy-deep);
     background-image:
-      linear-gradient(rgba(47,102,144,0.14) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(47,102,144,0.14) 1px, transparent 1px);
+      linear-gradient(rgba(31,95,191,0.056) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31,95,191,0.056) 1px, transparent 1px);
     background-size:28px 28px;
     color:var(--ink); font-family:'Inter',system-ui,sans-serif;
     min-height:100vh; padding:28px 20px 60px;
@@ -54,8 +58,8 @@
     position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;
     background-color:var(--navy-deep);
     background-image:
-      linear-gradient(rgba(47,102,144,0.14) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(47,102,144,0.14) 1px, transparent 1px);
+      linear-gradient(rgba(31,95,191,0.056) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31,95,191,0.056) 1px, transparent 1px);
     background-size:28px 28px;padding:20px;
   }
   body:not(.locked) .auth-gate{display:none;}
@@ -69,9 +73,10 @@
   .auth-card input[type=password]:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
   .auth-remember{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-muted);}
   .auth-submit{width:100%;background:var(--amber);color:var(--navy-deep);border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;padding:12px;border-radius:var(--radius);cursor:pointer;}
-  .auth-submit:hover{background:#ffb84f;}
-  .auth-error{display:none;color:var(--coral);font-family:'IBM Plex Mono',monospace;font-size:11.5px;margin-top:12px;padding:9px 11px;border:1px solid rgba(255,107,74,0.4);background:rgba(255,107,74,0.08);border-radius:var(--radius);}
+  .auth-submit:hover{background:#174EA0;}
+  .auth-error{display:none;color:var(--coral);font-family:'IBM Plex Mono',monospace;font-size:11.5px;margin-top:12px;padding:9px 11px;border:1px solid rgba(203,55,50,0.4);background:rgba(203,55,50,0.08);border-radius:var(--radius);}
 </style>
+<link rel="stylesheet" href="brand.css">
 </head>
 <body class="locked">
 <script src="auth.js"></script>
@@ -82,7 +87,7 @@
     <span class="corner" style="top:6px;right:6px;border-top:1.5px solid var(--line-blue);border-right:1.5px solid var(--line-blue);"></span>
     <span class="corner" style="bottom:6px;left:6px;border-bottom:1.5px solid var(--line-blue);border-left:1.5px solid var(--line-blue);"></span>
     <span class="corner" style="bottom:6px;right:6px;border-bottom:1.5px solid var(--line-blue);border-right:1.5px solid var(--line-blue);"></span>
-    <p class="auth-eyebrow"><span class="dot"></span>STEAMOJI · STAFF PORTAL</p>
+    <p class="auth-eyebrow"><img class="brand-logo sm" src="logo.png" alt="Steamoji Kirkland">STEAMOJI · STAFF PORTAL</p>
     <h2>Enter Passphrase</h2>
     <p class="sub2">Staff access only. Ask your director for the current passphrase.</p>
     <input type="password" id="authPassword" placeholder="Passphrase" autocomplete="off">
@@ -93,7 +98,7 @@
 </div>
 
 <div class="wrap">
-  <p class="eyebrow"><span class="dot"></span>STEAMOJI · STAFF PORTAL<span class="lock-link" id="lockLink">🔒 Lock</span></p>
+  <p class="eyebrow"><img class="brand-logo" src="logo.png" alt="Steamoji Kirkland">STEAMOJI · STAFF PORTAL<span class="lock-link" id="lockLink">🔒 Lock</span></p>
   <h1>Staff Portal</h1>
   <p class="sub">Internal tools for Steamoji Kirkland facilitators. v1 — passphrase access now, moving to Google-account sign-in later.</p>
 

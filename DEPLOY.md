@@ -189,8 +189,10 @@ with Date Added filled in automatically) plus an optional Amazon link and a
   past purchases (with links when we have them) and any open request for the
   same thing, so duplicates are obvious. Open requests in the list get a
   "Buy again" button when a past purchase has a link.
-- **History:** on first boot the server imports the sheet once from
-  `supplies-seed.json` (495 rows, exported 2026-10-06; 48 have Amazon links).
+- **History / clean start:** the sheet's 495 rows (exported 2026-10-06) are kept
+  only as purchase history: hidden from every list, but used for "Bought before".
+  A one-time clean start archives whatever existed before 2026-10-06 and clears
+  the activity log (runs once; recorded in the `supply_meta` table).
   Saving a purchase link when you mark something Ordered/Completed builds up the
   "buy again" library over time.
 - **Email:** every new request emails the same recipients as the Issue Tracker
@@ -200,3 +202,12 @@ with Date Added filled in automatically) plus an optional Amazon link and a
   Amazon search link.
 
 Startup log: `Supply requests ready. Notify: sankethka@metra.io via Gmail API`.
+
+---
+
+# Branding
+
+Every page uses the Steamoji Kirkland logo (`public/logo.png`), the same logo as
+the browser-tab icon (`favicon.png`, `favicon.ico`, `apple-touch-icon.png`), and a
+white + blue palette. Shared tweaks live in `public/brand.css`; each page's own
+colors are in the `:root` block at the top of its `<style>`.

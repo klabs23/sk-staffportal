@@ -5,8 +5,10 @@
 // plus an optional product link (usually Amazon).
 //
 // Table supply_requests lives in the same SQLite file (cache.db on the /data volume).
-// On first boot the sheet's history (supplies-seed.json, exported 2026-10-06) is imported once,
-// so "bought before" lookups work from day one.
+// On first boot the sheet's history (supplies-seed.json, exported 2026-10-06) is imported once as
+// ARCHIVED rows: hidden from every list, but still used for "bought before" suggestions.
+// A one-time clean start (2026-10-06) archived every request that existed then and cleared the
+// activity log, so the lists start empty while "bought before" keeps the full history.
 //
 // Access: staff = x-staff-key (portal passphrase hash); director = x-owner-key (OWNER_KEY env).
 // Anyone (staff or director) can create requests, edit the descriptive fields, change urgency, and
@@ -112,6 +114,9 @@ module.exports = function mountSupplies(app, db) {
     CREATE INDEX IF NOT EXISTS idx_supply_status ON supply_requests(status);
   `);
   try { db.exec("ALTER TABLE supply_requests ADD COLUMN status_by TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already there */ }
+  // archived = 1: kept only as purchase history (powers "bought before"), never shown in lists.
+  try { db.exec('ALTER TABLE supply_requests ADD COLUMN archived INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already there */ }
+  db.exec('CREATE TABLE IF NOT EXISTS supply_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
   // Activity log: every create / status change / edit, with who did it.
   db.exec(`
     CREATE TABLE IF NOT EXISTS supply_events (
@@ -136,8 +141,8 @@ module.exports = function mountSupplies(app, db) {
   if (!imported && fs.existsSync(seedFile)) {
     const rows = JSON.parse(fs.readFileSync(seedFile, 'utf8'));
     const ins = db.prepare(`INSERT INTO supply_requests
-      (status, date_added, item_name, quantity, purpose, requested_by, notes, link, source, sheet_row, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'sheet', ?, ?, ?)`);
+      (status, date_added, item_name, quantity, purpose, requested_by, notes, link, source, sheet_row, created_at, updated_at, archived)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'sheet', ?, ?, ?, 1)`);
     db.transaction(() => {
       rows.forEach((r) => {
         const ts = r.date ? Date.parse(r.date + 'T12:00:00-07:00') : Date.now();
@@ -145,7 +150,18 @@ module.exports = function mountSupplies(app, db) {
           r.requested_by || '', r.notes || '', normalizeLink(r.link) || '', r.row || null, ts, ts);
       });
     })();
-    console.log(`[supplies] imported ${rows.length} rows from the materials sheet`);
+    console.log(`[supplies] imported ${rows.length} rows from the materials sheet (as purchase history)`);
+  }
+
+  // ---- one-time clean start: archive everything so far, clear the activity log ----
+  const RESET_KEY = 'clean-start-2026-10-06';
+  if (!db.prepare('SELECT value FROM supply_meta WHERE key = ?').get(RESET_KEY)) {
+    db.transaction(() => {
+      const n = db.prepare('UPDATE supply_requests SET archived = 1 WHERE archived = 0').run().changes;
+      db.prepare('DELETE FROM supply_events').run();
+      db.prepare('INSERT INTO supply_meta (key, value) VALUES (?, ?)').run(RESET_KEY, String(Date.now()));
+      console.log(`[supplies] clean start: archived ${n} existing requests and cleared the activity log`);
+    })();
   }
 
   const staffHash = process.env.STAFF_KEY_HASH || DEFAULT_STAFF_HASH;
@@ -162,7 +178,7 @@ module.exports = function mountSupplies(app, db) {
   function findSimilar(q, excludeId) {
     const qt = [...new Set(tokens(q))];
     if (!qt.length) return { bought: [], open: [] };
-    const all = db.prepare('SELECT id, status, date_added, item_name, quantity, requested_by, link, notes FROM supply_requests WHERE id != ?').all(excludeId || 0);
+    const all = db.prepare('SELECT id, status, date_added, item_name, quantity, requested_by, link, notes, archived FROM supply_requests WHERE id != ?').all(excludeId || 0);
     const threshold = qt.length === 1 ? 0.75 : 0.65;
     const scored = all.map((r) => ({ r, s: similarity(qt, r.item_name) })).filter((x) => x.s >= threshold);
     const byScore = (a, b) => (b.s - a.s) || ((b.r.link ? 1 : 0) - (a.r.link ? 1 : 0)) || (b.r.date_added || '').localeCompare(a.r.date_added || '');
@@ -182,7 +198,7 @@ module.exports = function mountSupplies(app, db) {
     });
     // Duplicate warning: open requests, plus anything marked Ordered in the last 45 days (older "Ordered" rows are stale sheet history).
     const recent = new Date(Date.now() - 45 * 864e5).toISOString().slice(0, 10);
-    const open = scored.filter((x) => OPEN_STATUSES.includes(x.r.status) || (x.r.status === 'ordered' && x.r.date_added >= recent))
+    const open = scored.filter((x) => !x.r.archived && (OPEN_STATUSES.includes(x.r.status) || (x.r.status === 'ordered' && x.r.date_added >= recent)))
       .sort(byScore).slice(0, 3).map(({ r }) => ({ id: r.id, status: r.status, date_added: r.date_added, item_name: r.item_name, requested_by: r.requested_by }));
     const out = [...groups.values()].sort((a, b) => (b.score - a.score) || ((b.link ? 1 : 0) - (a.link ? 1 : 0)) || b.last_date.localeCompare(a.last_date))
       .slice(0, 5).map((g) => ({ id: g.id, item_name: g.item_name, status: g.status, last_date: g.last_date, times: g.times, link: g.link, links: g.links.slice(0, 3), quantity: g.quantity }));
@@ -194,7 +210,7 @@ module.exports = function mountSupplies(app, db) {
   // ---- routes ----
   app.get('/api/supplies', requireStaff, (req, res) => {
     const rows = db.prepare(`SELECT id, status, date_added, item_name, quantity, purpose, requested_by, notes, link, director_note, source, created_at, updated_at
-      FROM supply_requests ORDER BY date_added DESC, id DESC`).all();
+      FROM supply_requests WHERE archived = 0 ORDER BY date_added DESC, id DESC`).all();
     // For open requests without their own link, attach the best "bought before" link so it's one click to buy.
     rows.forEach((r) => {
       if (OPEN_STATUSES.includes(r.status) && !r.link) {
@@ -284,6 +300,7 @@ module.exports = function mountSupplies(app, db) {
     db.transaction(() => {
       db.prepare(`UPDATE supply_requests SET status=?, item_name=?, quantity=?, purpose=?, requested_by=?, notes=?, link=?, director_note=?, updated_at=?, status_changed_at=?, status_by=?, date_added=? WHERE id=?`)
         .run(next.status, next.item_name, next.quantity, next.purpose, next.requested_by, next.notes, next.link, next.director_note, next.updated_at, next.status_changed_at, next.status_by || '', next.date_added, r.id);
+      if (reopened && r.archived) db.prepare('UPDATE supply_requests SET archived = 0 WHERE id = ?').run(r.id);
       const ev = { request_id: r.id, author, is_owner: owner, created_at: now };
       if (statusChanged) logEvent({ ...ev, kind: 'status', from_status: r.status, to_status: next.status, body: clean(b.reason, 500) });
       if (edited.length) logEvent({ ...ev, kind: 'edit', body: 'Edited ' + edited.map((k) => LABELS[k]).join(', ') });
