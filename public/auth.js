@@ -14,7 +14,7 @@
    replace AUTH_HASH below. In any browser console:
    crypto.subtle.digest('SHA-256', new TextEncoder().encode('your passphrase')).then(b=>console.log(Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')))
 */
-const AUTH_HASH = "660189a4d1892274af66d02c3e17626f126d0f114fecd3b10da89fb2170a8a53"; // passphrase: Ojikirk2026
+const AUTH_HASH = "7a44363b0feda50d6ea2e38a8803ae2473d55a8ef74b79cb87303abee0b5987e"; // SHA-256 of the staff passphrase (the passphrase itself is not stored in this file)
 const AUTH_STORAGE_KEY = 'staffportal:auth';
 
 async function sha256Hex(str){

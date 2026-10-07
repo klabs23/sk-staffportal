@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <meta name="theme-color" content="#1F5FBF">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --navy-deep:#F4F8FD; --navy:#FFFFFF; --navy-card:#FFFFFF; --navy-card-hi:#EDF3FB;
@@ -88,6 +88,7 @@
   @media (max-width:560px){ .two{grid-template-columns:1fr;} }
   .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
   .err{color:var(--coral);font-size:13px;}
+  .req{font-weight:500;color:var(--coral);font-size:12px;}
 
   .photo-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
   .photo-pick .add{width:84px;height:84px;border:1px dashed var(--line-blue);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ink-muted);cursor:pointer;font-size:12px;background:var(--navy);}
@@ -155,7 +156,7 @@
 
 <div class="auth-gate" id="authGate">
   <div class="auth-card">
-    <img class="brand-logo auth" src="../logo.png" alt="Steamoji Kirkland">
+    <img class="brand-logo auth" src="../logo.png" alt=""><p class="brand-name auth">Steamoji Kirkland</p>
     <h2>Enter passphrase</h2>
     <p>Staff access only. Ask your director for the current passphrase.</p>
     <input type="password" id="authPassword" placeholder="Passphrase" autocomplete="off">
@@ -167,7 +168,7 @@
 
 <div class="wrap">
   <div class="topbar">
-    <a class="brand" href="../"><img class="brand-logo" src="../logo.png" alt="Steamoji Kirkland"><span>← Staff Portal</span></a>
+    <a class="brand" href="../" title="Back to the Staff Portal"><img class="brand-logo" src="../logo.png" alt=""><span class="brand-text"><span class="brand-name">Steamoji Kirkland</span><span class="brand-sub">← Staff Portal</span></span></a>
     <span class="spacer"></span>
     <span id="directorArea"></span>
     <button class="link" id="lockLink">🔒 Lock</button>
@@ -264,11 +265,10 @@
   }
 
   function nameField(id){
-    return '<div class="field"><label class="f" for="' + id + '">Your name</label><input type="text" id="' + id + '" maxlength="60" autocomplete="name" value="' + esc(lsGet(NAME_KEY) || '') + '" placeholder="So SK knows who to ask"></div>';
+    return '<div class="field"><label class="f" for="' + id + '">Your name <span class="req">(required)</span></label><input type="text" id="' + id + '" maxlength="60" autocomplete="off" required aria-required="true" value="" placeholder="Type your name"></div>';
   }
   function readName(id){
     var v = document.getElementById(id).value.trim();
-    if(v) lsSet(NAME_KEY, v);
     return v;
   }
 
@@ -464,7 +464,7 @@
   }
   window.addEventListener('hashchange', route);
   document.addEventListener('portal:unlocked', route);
-  document.addEventListener('DOMContentLoaded', function(){ state.owner = !!lsGet(OWNER_KEY); renderDirector(); });
+  document.addEventListener('DOMContentLoaded', function(){ state.owner = !!lsGet(OWNER_KEY); renderDirector(); try{ localStorage.removeItem(NAME_KEY); }catch(e){} });
 })();
 </script>
 </body>

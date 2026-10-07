@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <meta name="theme-color" content="#1F5FBF">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --navy-deep:#F4F8FD; --navy:#FFFFFF; --navy-card:#FFFFFF; --navy-card-hi:#EDF3FB;
@@ -218,6 +218,7 @@
   .name-ask h2{font-family:'Space Grotesk',sans-serif;font-size:19px;margin:0 0 6px;color:var(--paper);}
   .name-ask p{color:var(--ink-muted);font-size:13px;line-height:1.5;margin:0 0 14px;}
   .name-ask input{width:100%;background:var(--navy);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:10px 12px;font-size:15px;margin-bottom:14px;}
+  .req{font-weight:500;color:var(--coral);font-size:12px;}
   .you{display:flex;align-items:center;gap:6px;}
   .you input{width:130px;background:var(--navy);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:4px 8px;font-size:12.5px;font-family:'Inter',sans-serif;color:var(--ink);}
   .you input.need{border-color:var(--coral);box-shadow:0 0 0 2px rgba(203,55,50,0.3);}
@@ -237,7 +238,7 @@
 
 <div class="auth-gate" id="authGate">
   <div class="auth-card">
-    <img class="brand-logo auth" src="../logo.png" alt="Steamoji Kirkland">
+    <img class="brand-logo auth" src="../logo.png" alt=""><p class="brand-name auth">Steamoji Kirkland</p>
     <h2>Enter passphrase</h2>
     <p>Staff access only. Ask your director for the current passphrase.</p>
     <input type="password" id="authPassword" placeholder="Passphrase" autocomplete="off">
@@ -249,9 +250,8 @@
 
 <div class="wrap">
   <div class="topbar">
-    <a class="brand" href="../"><img class="brand-logo" src="../logo.png" alt="Steamoji Kirkland"><span>← Staff Portal</span></a>
+    <a class="brand" href="../" title="Back to the Staff Portal"><img class="brand-logo" src="../logo.png" alt=""><span class="brand-text"><span class="brand-name">Steamoji Kirkland</span><span class="brand-sub">← Staff Portal</span></span></a>
     <span class="spacer"></span>
-    <label class="you" for="youName">You: <input type="text" id="youName" maxlength="60" placeholder="your name" autocomplete="name"></label>
     <span id="directorArea"></span>
     <button class="link" id="lockLink">🔒 Lock</button>
   </div>
@@ -260,8 +260,8 @@
 
 <div class="name-ask" id="nameAsk" role="dialog" aria-modal="true" aria-labelledby="nameAskTitle"><div class="card">
   <h2 id="nameAskTitle">What's your name?</h2>
-  <p>Changes are logged with who made them. You only need to enter this once on this device.</p>
-  <input type="text" id="nameAskInput" maxlength="60" autocomplete="name" placeholder="Your name">
+  <p>Changes are logged with who made them.</p>
+  <input type="text" id="nameAskInput" maxlength="60" autocomplete="off" placeholder="Your name">
   <div class="actions"><button class="btn primary" id="nameAskOk">Continue</button><button class="btn" id="nameAskCancel">Cancel</button></div>
 </div></div>
 <div class="toast" id="toast" role="status"></div>
@@ -352,11 +352,14 @@
     return '';
   }
   function canComplete(r){ return isOpen(r.status) || r.status === 'ordered'; }
-  function myName(){ var i = document.getElementById('youName'); return (i && i.value.trim()) || lsGet(NAME_KEY) || ''; }
-  function saveName(n){ lsSet(NAME_KEY, n); var y = document.getElementById('youName'); if(y){ y.value = n; y.classList.remove('need'); } }
+  // Shared studio devices: names are never remembered or pre-filled. Each change asks who is making it.
+  var actingName = '';
+  function myName(){ return actingName; }
+  function saveName(n){ actingName = n; }
   // Every change is logged with a name. If we don't have one yet, ask for it right here (small dialog), then carry on.
   function withName(go, cancel){
-    if(myName() || state.owner) return go();
+    actingName = '';
+    if(state.owner) return go();
     var m = document.getElementById('nameAsk');
     m.classList.add('open');
     var input = document.getElementById('nameAskInput'); input.value = ''; setTimeout(function(){ input.focus(); }, 30);
@@ -465,7 +468,7 @@
     state.rows.forEach(function(r){ if(r.purpose && r.purpose.length < 40) purposes[r.purpose.trim()] = (purposes[r.purpose.trim()] || 0) + 1; if(r.requested_by) names[r.requested_by.trim()] = 1; });
     var top = Object.keys(purposes).filter(function(p){ return !/^n\/?a$/i.test(p); }).sort(function(a, b){ return purposes[b] - purposes[a]; }).slice(0, 30);
     return '<datalist id="dlPurpose">' + top.map(function(p){ return '<option value="' + esc(p) + '">'; }).join('') + '</datalist>' +
-      '<datalist id="dlNames">' + Object.keys(names).sort().map(function(n){ return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>';
+      '';
   }
   function renderNew(prefill){
     var ensure = state.rows.length ? Promise.resolve() : api('GET', '/api/supplies').then(function(d){ state.rows = d.requests; state.owner = d.owner; renderDirector(); }).catch(function(){});
@@ -482,7 +485,7 @@
       '<div class="field"><label class="f" for="nPurpose">Purpose <span class="opt">(optional)</span></label><input type="text" id="nPurpose" maxlength="200" list="dlPurpose" placeholder="Project, mission, or General"></div></div>' +
       '<div class="field"><label class="f" for="nLink">Amazon link <span class="opt">(optional)</span></label><div class="link-row"><input type="text" id="nLink" maxlength="2000" inputmode="url" placeholder="Paste a link if you found one"><a class="btn" id="nSearch" href="#" target="_blank" rel="noopener">Search Amazon ↗</a></div><div class="hint">Search opens Amazon in a new tab. Copy the product page\'s address and paste it here.</div></div>' +
       '<div class="field"><label class="f" for="nNotes">Notes <span class="opt">(optional)</span></label><textarea id="nNotes" maxlength="5000" placeholder="Size, brand, color, why the current ones don\'t work…"></textarea></div>' +
-      '<div class="field"><label class="f" for="nName">Facilitator who requested</label><input type="text" id="nName" maxlength="60" list="dlNames" autocomplete="name" value="' + esc(lsGet(NAME_KEY) || '') + '" placeholder="Your name"></div>' +
+      '<div class="field"><label class="f" for="nName">Facilitator who requested <span class="req">(required)</span></label><input type="text" id="nName" maxlength="60" autocomplete="off" required aria-required="true" placeholder="Type your name"></div>' + esc(lsGet(NAME_KEY) || '') + '" placeholder="Your name"></div>' +
       datalists() +
       '<div class="actions"><button class="btn primary" id="nSubmit">Submit request</button><a class="btn" href="#">Cancel</a><span class="err" id="nErr"></span></div></div>';
     var item = document.getElementById('nItem'), link = document.getElementById('nLink'), search = document.getElementById('nSearch');
@@ -505,7 +508,6 @@
       };
       if(!body.item_name){ err.textContent = 'Add the item name.'; item.focus(); return; }
       if(!name){ err.textContent = 'Add your name.'; document.getElementById('nName').focus(); return; }
-      lsSet(NAME_KEY, name); var yb = document.getElementById('youName'); if(yb && !yb.value) yb.value = name;
       btn.disabled = true; btn.textContent = 'Submitting…'; err.textContent = '';
       api('POST', '/api/supplies', body).then(function(d){ state.rows = []; drawDone(d.id, body); })
         .catch(function(e){ err.textContent = e.message; btn.disabled = false; btn.textContent = 'Submit request'; });
@@ -543,7 +545,7 @@
     return '<div class="reopen" id="reopenBox"><span class="f">Need it again</span><p class="meta" style="margin:0 0 10px">Puts this back on the Needed list (no need to create a new request) and emails SK.</p>' +
       '<div class="field"><div class="urg">' + URGENCY.map(function(u, i){ return '<label><input type="radio" name="rUrg" value="' + u.key + '"' + (i === 0 ? ' checked' : '') + '><span class="opt-card"><b>' + u.label + '</b><span>' + u.hint + '</span></span></label>'; }).join('') + '</div></div>' +
       '<div class="two"><div class="field"><label class="f" for="rWhy">Note <span class="opt">(optional)</span></label><input type="text" id="rWhy" maxlength="500" placeholder="e.g. Ran out again, need 2 boxes this time"></div>' +
-      '<div class="field"><label class="f" for="rName">Your name</label><input type="text" id="rName" maxlength="60" autocomplete="name" value="' + esc(myName()) + '" placeholder="So the log shows who"></div></div>' +
+      '<div class="field"><label class="f" for="rName">Your name <span class="req">(required)</span></label><input type="text" id="rName" maxlength="60" autocomplete="off" required placeholder="Type your name"></div></div>' +
       '<div class="actions"><button class="btn primary" id="rGo">Mark as needed</button><button class="btn" id="rCancel">Cancel</button></div></div>';
   }
   function renderDetail(id, openReopen){
@@ -570,9 +572,10 @@
         document.getElementById('rCancel').onclick = function(){ slot.innerHTML = ''; ab.style.display = ''; };
         document.getElementById('rGo').onclick = function(){
           var go = this, rn = document.getElementById('rName').value.trim();
-          if(rn) saveName(rn);
+          if(!rn && !state.owner){ toast('Add your name'); document.getElementById('rName').focus(); return; }
+          saveName(rn);
           go.disabled = true;
-          setStatus(r.id, (document.querySelector('input[name=rUrg]:checked') || {}).value || 'in_need', {reason: document.getElementById('rWhy').value.trim()},
+          doSetStatus(r.id, (document.querySelector('input[name=rUrg]:checked') || {}).value || 'in_need', {reason: document.getElementById('rWhy').value.trim()},
             function(){ state.rows = []; renderDetail(r.id); }, function(){ go.disabled = false; });
         };
       }
@@ -663,8 +666,7 @@
   document.addEventListener('portal:unlocked', route);
   document.addEventListener('DOMContentLoaded', function(){
     state.owner = !!lsGet(OWNER_KEY); renderDirector();
-    var y = document.getElementById('youName'); y.value = lsGet(NAME_KEY) || '';
-    y.oninput = function(){ y.classList.remove('need'); lsSet(NAME_KEY, y.value.trim() || null); var n = document.getElementById('nName'); if(n && !n.value) n.value = y.value.trim(); };
+    try{ localStorage.removeItem(NAME_KEY); }catch(e){} // clear any name remembered by an earlier version
   });
 })();
 </script>

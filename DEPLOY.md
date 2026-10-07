@@ -20,7 +20,7 @@ whatever hosts the main marketing site.
   generation through the `kirkland@steamoji.com` account, and
   backs the shared idea cache with SQLite.
 
-v1 is intentionally simple: one shared passphrase (`OjiKirk2026`), stored as
+v1 is intentionally simple: one shared passphrase (ask SK), stored as
 a SHA-256 hash in `auth.js`, no individual staff accounts. The plan to
 replace this with real Google-account sign-in later is a separate, bigger
 step — this just gets staff into a real, usable portal today.
@@ -76,7 +76,7 @@ changes are needed either.
 ## 5. Test end to end
 
 - Visit `staffportal.steamojikirkland.com` — passphrase gate should appear
-  (`OjiKirk2026`).
+  (the current staff passphrase).
 - After unlocking, you should see the project directory with a Free-Time
   Idea Engine card.
 - Click into it, confirm it opens **without** asking for the passphrase

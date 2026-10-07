@@ -35,7 +35,7 @@ const STAFF_STATUSES = ['in_need', 'low', 'would_be_nice'];          // selectab
 const STAFF_SETTABLE = ['in_need', 'low', 'would_be_nice', 'completed']; // any staff can move a request to these
 const OPEN_STATUSES = ['in_need', 'low', 'would_be_nice'];
 const BOUGHT_STATUSES = ['completed', 'ordered', 'return'];
-const DEFAULT_STAFF_HASH = '660189a4d1892274af66d02c3e17626f126d0f114fecd3b10da89fb2170a8a53';
+const DEFAULT_STAFF_HASH = '7a44363b0feda50d6ea2e38a8803ae2473d55a8ef74b79cb87303abee0b5987e';
 
 const sha = (s) => crypto.createHash('sha256').update(String(s)).digest();
 const safeEq = (a, b) => crypto.timingSafeEqual(sha(a), sha(b));

@@ -26,7 +26,7 @@ const mailer = require('./mailer');
 
 const STATUSES = ['submitted', 'in_progress', 'fixed', 'not_fixing'];
 const STATUS_LABEL = { submitted: 'Submitted', in_progress: 'In progress', fixed: 'Fixed', not_fixing: 'Not fixing' };
-const DEFAULT_STAFF_HASH = '660189a4d1892274af66d02c3e17626f126d0f114fecd3b10da89fb2170a8a53';
+const DEFAULT_STAFF_HASH = '7a44363b0feda50d6ea2e38a8803ae2473d55a8ef74b79cb87303abee0b5987e';
 
 const sha = (s) => crypto.createHash('sha256').update(String(s)).digest();
 const safeEq = (a, b) => crypto.timingSafeEqual(sha(a), sha(b));

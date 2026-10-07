@@ -12,3 +12,24 @@
 .st-low,.s-in_progress{color:#B45F06 !important;border-color:rgba(180,95,6,.45) !important;background:rgba(180,95,6,.08) !important;}
 .sugg.warn{border-left-color:#B45F06;background:rgba(180,95,6,.06);}
 .toast{background:#0B2A55 !important;color:#fff !important;}
+
+/* "Steamoji Kirkland" wordmark next to the logo */
+.brand-text{display:inline-flex;flex-direction:column;justify-content:center;line-height:1.05;text-transform:none;letter-spacing:0;}
+.brand-name{font-family:'Bungee',system-ui,sans-serif;font-weight:400;font-size:22px;letter-spacing:.01em;color:#0B2A55;text-transform:none;}
+.brand-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#1F5FBF;margin-top:3px;}
+.eyebrow,.auth-eyebrow{align-items:center;gap:12px !important;}
+.eyebrow .brand-logo{width:52px;height:52px;}
+.auth-eyebrow .brand-logo.sm{width:40px;height:40px;}
+.auth-eyebrow .brand-name{font-size:18px;}
+.topbar .brand{text-decoration:none;}
+.topbar .brand .brand-logo{width:46px;height:46px;}
+.topbar .brand .brand-sub{font-size:10.5px;}
+.topbar .brand:hover .brand-sub{color:#174EA0;}
+p.brand-name.auth{text-align:center;margin:-6px 0 16px;font-size:20px;}
+@media (max-width:480px){ .brand-name{font-size:18px;} .eyebrow .brand-logo,.topbar .brand .brand-logo{width:42px;height:42px;} }
+
+/* Bungee for every title; body text keeps its existing font */
+h1,h2,.d-head h2,h3.sec,.project-card h3,.card h3,.auth-card h2,.name-ask h2,.panel h2{font-family:'Bungee',system-ui,sans-serif !important;font-weight:400 !important;letter-spacing:0 !important;}
+h1{font-size:clamp(26px,4.5vw,36px) !important;line-height:1.15;}
+/* list rows are data, not titles: keep them in the body font */
+.row h3,.srow h3{font-family:'Inter',system-ui,sans-serif !important;}
