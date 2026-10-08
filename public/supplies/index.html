@@ -311,20 +311,12 @@
   }
 
   /* ---------- director (owner) mode: same key as the Issue Tracker ---------- */
-  function renderDirector(){
-    var a = document.getElementById('directorArea');
-    a.innerHTML = state.owner ? '<span class="director-badge">Director</span> <button class="link" id="ownerOut">Sign out director</button>' : '<button class="link" id="ownerIn">Director sign-in</button>';
-    var i = document.getElementById('ownerIn'), o = document.getElementById('ownerOut');
-    if(i) i.onclick = function(){
-      var k = prompt('Director key (the OWNER_KEY set on the server):');
-      if(!k) return;
-      fetch('/api/issues/owner-check', {headers:{'x-owner-key':k}}).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); }).then(function(x){
-        if(x.ok){ lsSet(OWNER_KEY, k); state.owner = true; renderDirector(); route(); toast('Signed in as director'); }
-        else alert(x.d.error || "That key didn't match.");
-      });
-    };
-    if(o) o.onclick = function(){ lsSet(OWNER_KEY, null); state.owner = false; renderDirector(); route(); };
-  }
+  function renderDirector(){ /* director sign-in now lives in the shared header (auth.js) */ }
+  document.addEventListener('portal:director', function(e){
+    state.owner = !!(e.detail && e.detail.director);
+    route();
+    toast(state.owner ? 'Director mode on' : 'Director mode off');
+  });
 
   /* ---------- list ---------- */
   var FILTERS = [

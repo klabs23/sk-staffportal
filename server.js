@@ -31,6 +31,15 @@ mountSupplies(app, db);
 // --- News feed (director posts updates for staff; shown on the portal home page) ---
 mountNews(app, db, DATA_DIR);
 
+// --- Director check (one sign-in for the whole portal; key = OWNER_KEY) ---
+app.get('/api/director/check', (req, res) => {
+  if (!process.env.OWNER_KEY) return res.status(503).json({ ok: false, error: 'OWNER_KEY is not set on the server yet.' });
+  const sha = (s) => require('crypto').createHash('sha256').update(String(s)).digest();
+  const k = req.get('x-owner-key') || '';
+  const ok = !!k && require('crypto').timingSafeEqual(sha(k), sha(process.env.OWNER_KEY));
+  res.status(ok ? 200 : 401).json({ ok });
+});
+
 // --- Static site ---
 app.use(express.static(path.join(__dirname, 'public')));
 

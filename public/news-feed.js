@@ -48,29 +48,14 @@
     }).then(function(x){
       if(!x.ok){ $('nfList').innerHTML = '<p class="nf-empty">' + esc(x.d.error || 'Could not load updates.') + '</p>'; return; }
       state.posts = x.d.posts || []; state.director = !!x.d.director; state.loaded = true;
-      if(!state.director && lsGet(OWNER_KEY)) lsSet(OWNER_KEY, null); // stale key
       renderHead(); renderList(); openFromHash();
     }).catch(function(){ $('nfList').innerHTML = '<p class="nf-empty">Could not load updates. Check your connection.</p>'; });
   }
 
   function renderHead(){
     var a = $('nfDirector');
-    a.innerHTML = state.director
-      ? '<button class="nf-btn" id="nfNew">+ New update</button><button class="nf-link" id="nfOut" title="Sign out of director mode">Director ✓</button>'
-      : '<button class="nf-link" id="nfIn">Director sign-in</button>';
+    a.innerHTML = state.director ? '<button class="nf-btn" id="nfNew">+ New update</button>' : '';
     if($('nfNew')) $('nfNew').onclick = function(){ openComposer(null); };
-    if($('nfOut')) $('nfOut').onclick = function(){ if(confirm('Sign out of director mode on this device?')){ lsSet(OWNER_KEY, null); state.director = false; renderHead(); renderList(); } };
-    if($('nfIn')) $('nfIn').onclick = directorSignIn;
-  }
-
-  function directorSignIn(){
-    var k = prompt('Director key (the OWNER_KEY set on the server):');
-    if(!k) return;
-    fetch('/api/issues/owner-check', { headers: { 'x-owner-key': k } }).then(function(r){
-      if(r.ok){ lsSet(OWNER_KEY, k); state.director = true; renderHead(); renderList(); toast('Signed in as director'); }
-      else if(r.status === 503){ alert('OWNER_KEY is not set on the server yet.'); }
-      else { alert("That director key didn't match."); }
-    });
   }
 
   function mediaBadge(p){
@@ -275,4 +260,10 @@
     renderHead();
   });
   document.addEventListener('portal:unlocked', function(){ if($('nfList')) load(); });
+  document.addEventListener('portal:director', function(e){
+    state.director = !!(e.detail && e.detail.director);
+    if($('nfOverlay') && $('nfOverlay').classList.contains('open')) closeOverlay();
+    renderHead();
+    if(!document.body.classList.contains('locked')) load();
+  });
 })();
