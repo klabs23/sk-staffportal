@@ -75,11 +75,83 @@
   .auth-submit{width:100%;background:var(--amber);color:var(--navy-deep);border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;padding:12px;border-radius:var(--radius);cursor:pointer;}
   .auth-submit:hover{background:#174EA0;}
   .auth-error{display:none;color:var(--coral);font-family:'IBM Plex Mono',monospace;font-size:11.5px;margin-top:12px;padding:9px 11px;border:1px solid rgba(203,55,50,0.4);background:rgba(203,55,50,0.08);border-radius:var(--radius);}
+
+  /* --- Two-column home: tools left, news feed right --- */
+  .wrap{max-width:1180px;}
+  .home{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:28px;align-items:start;}
+  @media (max-width:960px){ .home{grid-template-columns:1fr;} }
+
+  .news{background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);position:sticky;top:20px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(11,42,85,.05);}
+  @media (max-width:960px){ .news{position:static;max-height:none;} }
+  .nf-head{padding:16px 16px 12px;border-bottom:1px solid var(--line-blue-soft);}
+  .nf-head-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .nf-head h2{font-size:17px;margin:0;color:var(--paper);flex:1;min-width:0;}
+  .nf-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);margin:4px 0 0;}
+  #nfDirector{display:flex;align-items:center;gap:8px;}
+  .nf-list{overflow-y:auto;padding:0 16px 16px;flex:1;overscroll-behavior:contain;}
+  .nf-month-h{position:sticky;top:0;z-index:1;background:var(--navy-card);margin:0;padding:14px 0 6px;font-family:'IBM Plex Mono',monospace !important;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);border-bottom:1px dashed var(--line-blue-soft);}
+  .nf-items{list-style:none;margin:0;padding:0;}
+  .nf-day{font-size:12px;font-weight:600;color:var(--ink-muted);margin:12px 0 6px;}
+  .nf-item{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:var(--radius);padding:9px 10px;margin:0 -10px;width:calc(100% + 20px);cursor:pointer;color:inherit;font:inherit;transition:background .12s,border-color .12s;}
+  .nf-item:hover{background:var(--navy-card-hi);border-color:var(--line-blue-soft);}
+  .nf-item:focus-visible{outline:2px solid var(--cyan);outline-offset:1px;}
+  .nf-thumb{width:44px;height:44px;object-fit:cover;border-radius:var(--radius);flex:none;border:1px solid var(--line-blue-soft);}
+  .nf-item-main{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .nf-title{font-weight:600;font-size:14px;color:var(--paper);line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .nf-item.is-new .nf-title::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--coral);margin-right:7px;vertical-align:2px;}
+  .nf-sub{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);}
+  .nf-meta-chip{border:1px solid var(--line-blue-soft);padding:0 5px;border-radius:2px;}
+  .nf-new{color:var(--coral);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:10px;}
+  .nf-empty{color:var(--ink-muted);font-size:13.5px;line-height:1.5;margin:18px 0 4px;}
+
+  .nf-btn{background:var(--amber);color:#fff;border:1px solid var(--amber);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;border-radius:var(--radius);cursor:pointer;}
+  .nf-btn:hover{background:#174EA0;}
+  .nf-btn:disabled{opacity:.6;cursor:wait;}
+  .nf-btn.ghost{background:transparent;color:var(--amber);}
+  .nf-btn.ghost:hover{background:var(--navy-card-hi);}
+  .nf-btn.danger{background:transparent;color:var(--coral);border-color:rgba(203,55,50,.45);}
+  .nf-btn.danger:hover{background:rgba(203,55,50,.08);}
+  .nf-link{background:none;border:none;padding:0;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);cursor:pointer;}
+  .nf-link:hover{color:var(--cyan);text-decoration:underline;}
+
+  /* overlay */
+  .nf-overlay{position:fixed;inset:0;z-index:1000;display:none;align-items:flex-start;justify-content:center;background:rgba(11,42,85,.45);padding:5vh 16px;overflow-y:auto;}
+  .nf-overlay.open{display:flex;}
+  body.nf-noscroll{overflow:hidden;}
+  .nf-panel{position:relative;width:100%;max-width:680px;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:28px 28px 24px;box-shadow:0 20px 50px rgba(11,42,85,.25);}
+  @media (max-width:520px){ .nf-panel{padding:22px 18px 18px;} .nf-overlay{padding:12px 8px;} }
+  .nf-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border:1px solid transparent;background:none;font-size:16px;color:var(--ink-muted);cursor:pointer;border-radius:var(--radius);}
+  .nf-close:hover{background:var(--navy-card-hi);border-color:var(--line-blue-soft);color:var(--paper);}
+  .nf-o-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);margin:0 40px 8px 0;}
+  .nf-o-title{font-size:22px;line-height:1.25;margin:0 30px 6px 0;color:var(--paper);}
+  .nf-o-by{font-size:13px;color:var(--ink-muted);margin:0 0 16px;}
+  .nf-o-body{font-size:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 18px;}
+  .nf-o-body a{color:var(--cyan);}
+  .nf-o-media{display:flex;flex-direction:column;gap:12px;margin:0 0 18px;}
+  .nf-media{display:block;width:100%;max-height:70vh;object-fit:contain;background:#0B2A55;border-radius:var(--radius);}
+  .nf-o-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line-blue-soft);padding-top:16px;margin-top:6px;}
+  .nf-f{display:block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.08em;}
+  .nf-opt{text-transform:none;letter-spacing:0;}
+  .nf-panel input:not([type=file]),.nf-panel textarea{width:100%;background:#fff;border:1px solid var(--line-blue);color:var(--ink);border-radius:var(--radius);padding:10px 12px;font-family:'Inter',sans-serif;font-size:14.5px;}
+  .nf-panel textarea{resize:vertical;min-height:140px;line-height:1.5;}
+  .nf-panel input:focus-visible,.nf-panel textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:1px;}
+  .nf-files{display:flex;flex-wrap:wrap;gap:8px;}
+  .nf-chip{position:relative;width:84px;height:84px;border:1px solid var(--line-blue-soft);border-radius:var(--radius);overflow:hidden;background:#0B2A55;}
+  .nf-chip img,.nf-chip video{width:100%;height:100%;object-fit:cover;display:block;}
+  .nf-chip button{position:absolute;top:3px;right:3px;width:22px;height:22px;border:none;border-radius:50%;background:rgba(11,42,85,.8);color:#fff;font-size:11px;cursor:pointer;}
+  .nf-chip-tag{position:absolute;left:5px;bottom:4px;color:#fff;font-size:12px;text-shadow:0 1px 2px #000;}
+  .nf-drop{display:block;margin-top:8px;border:1.5px dashed var(--line-blue);border-radius:var(--radius);padding:16px;text-align:center;font-size:13.5px;color:var(--amber);font-weight:600;cursor:pointer;}
+  .nf-drop:hover,.nf-drop.over{background:var(--navy-card-hi);border-color:var(--amber);}
+  .nf-progress{height:6px;background:var(--line-blue-soft);border-radius:3px;overflow:hidden;margin-top:12px;}
+  .nf-progress span{display:block;height:100%;width:0;background:var(--amber);transition:width .2s;}
+  .nf-err{color:var(--coral);font-size:13px;}
+  .nf-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 16px;border-radius:var(--radius);font-size:14px;z-index:1100;}
 </style>
 <link rel="stylesheet" href="brand.css">
 </head>
 <body class="locked">
 <script src="auth.js"></script>
+<script src="news-feed.js"></script>
 
 <div class="auth-gate" id="authGate">
   <div class="auth-card">
@@ -102,6 +174,8 @@
   <h1>Staff Portal</h1>
   <p class="sub">Internal tools for Steamoji Kirkland facilitators. v1 — passphrase access now, moving to Google-account sign-in later.</p>
 
+  <div class="home">
+  <main class="tools">
   <div class="project-grid">
     <a class="project-card" href="freetime/">
       <span class="corner" style="top:6px;left:6px;border-top:1.5px solid var(--line-blue);border-left:1.5px solid var(--line-blue);"></span>
@@ -138,7 +212,19 @@
       <p>Additional facilitator tools will show up here as they're built.</p>
     </div>
   </div>
+  </main>
+
+  <aside class="news" aria-label="News and updates">
+    <div class="nf-head">
+      <div class="nf-head-top"><h2>News &amp; Updates</h2><div id="nfDirector"></div></div>
+      <p class="nf-count" id="nfCount"></p>
+    </div>
+    <div class="nf-list" id="nfList"><p class="nf-empty">Loading updates…</p></div>
+  </aside>
+  </div>
 </div>
+
+<div class="nf-overlay" id="nfOverlay"><div class="nf-panel" id="nfPanel" role="dialog" aria-modal="true"></div></div>
 
 </body>
 </html>

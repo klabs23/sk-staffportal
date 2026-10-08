@@ -4,6 +4,7 @@ const fs = require('fs');
 const Database = require('better-sqlite3');
 const mountIssues = require('./issues');
 const mountSupplies = require('./supplies');
+const mountNews = require('./news');
 
 const app = express();
 app.use(express.json());
@@ -26,6 +27,9 @@ mountIssues(app, db, DATA_DIR);
 
 // --- Supply requests API (replaces the materials Google Sheet) ---
 mountSupplies(app, db);
+
+// --- News feed (director posts updates for staff; shown on the portal home page) ---
+mountNews(app, db, DATA_DIR);
 
 // --- Static site ---
 app.use(express.static(path.join(__dirname, 'public')));
