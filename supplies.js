@@ -209,7 +209,7 @@ module.exports = function mountSupplies(app, db) {
 
   // ---- routes ----
   app.get('/api/supplies', requireStaff, (req, res) => {
-    const rows = db.prepare(`SELECT id, status, date_added, item_name, quantity, purpose, requested_by, notes, link, director_note, source, created_at, updated_at
+    const rows = db.prepare(`SELECT id, status, date_added, item_name, quantity, purpose, requested_by, notes, link, director_note, source, created_at, updated_at, status_changed_at, status_by
       FROM supply_requests WHERE archived = 0 ORDER BY date_added DESC, id DESC`).all();
     // For open requests without their own link, attach the best "bought before" link so it's one click to buy.
     rows.forEach((r) => {

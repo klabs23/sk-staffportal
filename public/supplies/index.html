@@ -163,6 +163,11 @@
 
   .srow{display:grid;grid-template-columns:132px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:12px 14px;}
   .srow:hover{border-color:var(--line-blue);}
+  /* Ordered = action taken: tinted row with a purple bar, so it reads as "on its way" at a glance */
+  .srow.is-ordered{background:linear-gradient(90deg,rgba(106,79,200,0.10),rgba(106,79,200,0.04)),var(--navy-card);border-color:rgba(106,79,200,0.35);box-shadow:inset 4px 0 0 #6A4FC8;}
+  .srow.is-ordered:hover{border-color:rgba(106,79,200,0.6);}
+  .srow .ordered-line{display:inline-flex;align-items:center;gap:6px;margin-top:5px;font-size:12.5px;font-weight:600;color:#5A40B5;}
+  .srow .ordered-line svg{flex:none;}
   .srow .st-col{display:flex;align-items:center;}
   .srow h3{margin:0 0 4px;font-size:15.5px;font-weight:600;line-height:1.35;}
   .srow h3 a{color:var(--paper);text-decoration:none;}
@@ -284,6 +289,17 @@
   function lsSet(k,v){ try{ if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){} }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function pill(st){ return '<span class="pill st-' + esc(st) + '">' + esc(STATUS[st] || st) + '</span>'; }
+  function fmtTs(ms){
+    if(!ms) return '';
+    var dt = new Date(ms);
+    return dt.toLocaleDateString(undefined, {month:'short', day:'numeric', year: dt.getFullYear() === new Date().getFullYear() ? undefined : 'numeric'});
+  }
+  var TRUCK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>';
+  function orderedLine(r){
+    if(r.status !== 'ordered') return '';
+    var when = fmtTs(r.status_changed_at), by = r.status_by;
+    return '<div class="ordered-line">' + TRUCK + 'Ordered' + (when ? ' ' + esc(when) : '') + (by ? ' by ' + esc(by) : '') + ' · on its way</div>';
+  }
   function fmtDate(d){
     if(!d) return '';
     var p = d.split('-').map(Number), dt = new Date(p[0], p[1]-1, p[2]);
@@ -405,8 +421,8 @@
         if(r.quantity) bits.push('Qty: ' + esc(r.quantity));
         if(r.purpose) bits.push(esc(r.purpose));
         bits.push((r.requested_by ? esc(r.requested_by) : 'Unknown') + ', ' + esc(fmtDate(r.date_added)));
-        return '<div class="srow"><div class="st-col">' + pill(r.status) + '</div><div><h3><a href="#' + r.id + '">' + esc(r.item_name) + '</a></h3><div class="meta">' + bits.join(' · ') + '</div>' +
-          (r.notes ? '<div class="note">' + esc(r.notes) + '</div>' : '') + '</div>' +
+        return '<div class="srow' + (r.status === 'ordered' ? ' is-ordered' : '') + '"><div class="st-col">' + pill(r.status) + '</div><div><h3><a href="#' + r.id + '">' + esc(r.item_name) + '</a></h3><div class="meta">' + bits.join(' · ') + '</div>' +
+          (r.notes ? '<div class="note">' + esc(r.notes) + '</div>' : '') + orderedLine(r) + '</div>' +
           '<div class="right">' + buyButton(r) + (state.owner ? quickStatus(r) : (canComplete(r) ? '<button class="buy done-btn" data-done="' + r.id + '">✓ Mark received</button>' : '') + (r.status === 'completed' ? '<button class="buy again-btn" data-again="' + r.id + '">↺ Need again</button>' : '')) + '</div></div>';
       }).join('') + '</div>' + (rows.length > shown.length ? '<button class="btn more" id="moreBtn">Show more (' + (rows.length - shown.length) + ' left)</button>' : '');
     }
