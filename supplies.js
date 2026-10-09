@@ -12,7 +12,7 @@
 //
 // Access: staff = x-staff-key (portal passphrase hash); director = x-owner-key (OWNER_KEY env).
 // Anyone (staff or director) can create requests, edit the descriptive fields, change urgency, and
-// mark a request Completed. Only the director sets Ordered / Not Purchasing / Return or posts a director note.
+// mark a request Received (stored as 'completed'). Only the director sets Ordered / Not Purchasing / Return or posts a director note.
 //
 // Notifications: every new request emails SUPPLY_NOTIFY_EMAIL, else NOTIFY_EMAIL (same as the Issue Tracker), default sankethka@metra.io,
 // using the shared mailer (Gmail API or Resend, same config as the Issue Tracker).
@@ -27,7 +27,7 @@ const STATUS = {
   low: 'Low',
   would_be_nice: 'Would Be Nice',
   ordered: 'Ordered',
-  completed: 'Completed',
+  completed: 'Received',   // stored as 'completed'; shown to staff as Received
   not_purchasing: 'Not Purchasing',
   return: 'Return',
 };
@@ -260,7 +260,7 @@ module.exports = function mountSupplies(app, db) {
     notifyNew(r).catch((e) => console.error('[supplies] notify error', e));
   });
 
-  // Anyone: edit descriptive fields, change urgency, mark Completed, or put a Completed item back to Needed.
+  // Anyone: edit descriptive fields, change urgency, mark Received, or put a Received item back to Needed.
   // Director only: Ordered / Not Purchasing / Return and the director note. Every change is logged with who made it.
   app.patch('/api/supplies/:id', requireStaff, (req, res) => {
     const r = db.prepare('SELECT * FROM supply_requests WHERE id = ?').get(req.params.id);

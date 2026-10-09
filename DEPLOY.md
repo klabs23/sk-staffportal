@@ -175,10 +175,10 @@ with Date Added filled in automatically) plus an optional Amazon link and a
 "Search Amazon" button.
 
 - **Status:** staff pick In Need, Low, or Would Be Nice when submitting. Anyone
-  can mark a request Completed (the name of whoever did it is recorded). Only
+  can mark a request Received (the name of whoever did it is recorded). Only
   the director can set Ordered, Not Purchasing, or Return, or post a note to
   staff (director key = the same `OWNER_KEY` used by the Issue Tracker).
-- **Need it again:** anything Completed can be put back on the Needed list by
+- **Need it again:** anything Received can be put back on the Needed list by
   anyone (with an urgency and optional note), so nobody has to re-create the
   request. It jumps back to the top of the list and SK gets a "Needed again" email.
 - **Activity log:** every request, status change, edit, link change, and director
@@ -193,7 +193,7 @@ with Date Added filled in automatically) plus an optional Amazon link and a
   only as purchase history: hidden from every list, but used for "Bought before".
   A one-time clean start archives whatever existed before 2026-10-06 and clears
   the activity log (runs once; recorded in the `supply_meta` table).
-  Saving a purchase link when you mark something Ordered/Completed builds up the
+  Saving a purchase link when you mark something Ordered/Received builds up the
   "buy again" library over time.
 - **Email:** every new request emails the same recipients as the Issue Tracker
   (`NOTIFY_EMAIL`, default `sankethka@metra.io`; set `SUPPLY_NOTIFY_EMAIL` to send

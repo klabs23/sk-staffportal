@@ -269,7 +269,7 @@
 
 <script>
 (function(){
-  var STATUS = {in_need:'In Need', low:'Low', would_be_nice:'Would Be Nice', ordered:'Ordered', completed:'Completed', not_purchasing:'Not Purchasing', 'return':'Return'};
+  var STATUS = {in_need:'In Need', low:'Low', would_be_nice:'Would Be Nice', ordered:'Ordered', completed:'Received', not_purchasing:'Not Purchasing', 'return':'Return'};
   var ORDER = ['in_need','low','would_be_nice','ordered','completed','not_purchasing','return'];
   var URGENCY = [
     {key:'in_need', label:'In Need', hint:'Out, or about to run out'},
@@ -321,9 +321,9 @@
 
   /* ---------- list ---------- */
   var FILTERS = [
-    // Ordered items stay on the Needed list (with an Ordered status) until someone marks them completed.
+    // Ordered items stay on the Needed list (with an Ordered status) until someone marks them received.
     {key:'open', label:'Needed', test:function(r){ return isOpen(r.status) || r.status === 'ordered'; }},
-    {key:'completed', label:'Completed', test:function(r){ return r.status === 'completed'; }},
+    {key:'completed', label:'Received', test:function(r){ return r.status === 'completed'; }},
     {key:'not', label:'Not purchasing', test:function(r){ return r.status === 'not_purchasing' || r.status === 'return'; }},
     {key:'all', label:'All', test:function(){ return true; }}
   ];
@@ -347,7 +347,7 @@
   function canComplete(r){ return isOpen(r.status) || r.status === 'ordered'; }
   // Shared studio devices: names are never remembered or pre-filled. Each change asks who is making it.
   var actingName = '';
-  // Name typed when confirming a change (Mark completed / Need again / edits) is remembered on this device
+  // Name typed when confirming a change (Mark received / Need again / edits) is remembered on this device
   // and pre-filled the next time, so it's one tap to confirm. New-request forms still start empty.
   var CONFIRM_KEY = 'staffportal:confirmName';
   function lastConfirmName(){ return lsGet(CONFIRM_KEY) || ''; }
@@ -377,7 +377,7 @@
     var body = {status: st, author: myName()}; if(extra) for(var k in extra) body[k] = extra[k];
     return api('PATCH', '/api/supplies/' + id, body).then(function(){
       state.rows.forEach(function(r){ if(r.id === id) r.status = st; });
-      toast(st === 'completed' ? 'Marked completed' : isOpen(st) ? 'Back on the Needed list' : 'Marked ' + STATUS[st]); if(done) done();
+      toast(st === 'completed' ? 'Marked received' : isOpen(st) ? 'Back on the Needed list' : 'Marked ' + STATUS[st]); if(done) done();
     }).catch(function(e){ alert(e.message); if(onFail) onFail(); });
   }
   function markCompleted(id, done, onFail){ return setStatus(id, 'completed', null, done, onFail); }
@@ -407,7 +407,7 @@
         bits.push((r.requested_by ? esc(r.requested_by) : 'Unknown') + ', ' + esc(fmtDate(r.date_added)));
         return '<div class="srow"><div class="st-col">' + pill(r.status) + '</div><div><h3><a href="#' + r.id + '">' + esc(r.item_name) + '</a></h3><div class="meta">' + bits.join(' · ') + '</div>' +
           (r.notes ? '<div class="note">' + esc(r.notes) + '</div>' : '') + '</div>' +
-          '<div class="right">' + buyButton(r) + (state.owner ? quickStatus(r) : (canComplete(r) ? '<button class="buy done-btn" data-done="' + r.id + '">✓ Mark completed</button>' : '') + (r.status === 'completed' ? '<button class="buy again-btn" data-again="' + r.id + '">↺ Need again</button>' : '')) + '</div></div>';
+          '<div class="right">' + buyButton(r) + (state.owner ? quickStatus(r) : (canComplete(r) ? '<button class="buy done-btn" data-done="' + r.id + '">✓ Mark received</button>' : '') + (r.status === 'completed' ? '<button class="buy again-btn" data-again="' + r.id + '">↺ Need again</button>' : '')) + '</div></div>';
       }).join('') + '</div>' + (rows.length > shown.length ? '<button class="btn more" id="moreBtn">Show more (' + (rows.length - shown.length) + ' left)</button>' : '');
     }
     var hadFocus = document.activeElement && document.activeElement.id === 'q';
@@ -557,7 +557,7 @@
         (r.notes ? '<dt>Notes</dt><dd>' + linkify(r.notes) + '</dd>' : '') +
         (r.link ? '<dt>Product link</dt><dd><a href="' + esc(r.link) + '" target="_blank" rel="noopener">' + esc(r.link) + '</a></dd>' : '') + '</dl>';
       var src = state.owner && r.notify_status ? '<p class="notify">Last email: ' + esc(r.notify_status) + '</p>' : '';
-      var buy = '<div class="actions" style="margin-top:16px">' + (r.link ? '<a class="btn primary" href="' + esc(r.link) + '" target="_blank" rel="noopener">Open product link ↗</a>' : '') + '<a class="btn" href="' + esc(d.amazon_search) + '" target="_blank" rel="noopener">Search Amazon ↗</a>' + (!state.owner && canComplete(r) ? '<button class="btn" id="doneBtn">✓ Mark completed</button>' : '') + (r.status === 'completed' ? '<button class="btn" id="againBtn">↺ Need it again</button>' : '') + '<button class="btn" id="editBtn">Edit</button></div>' + '<div id="reopenSlot"></div>';
+      var buy = '<div class="actions" style="margin-top:16px">' + (r.link ? '<a class="btn primary" href="' + esc(r.link) + '" target="_blank" rel="noopener">Open product link ↗</a>' : '') + '<a class="btn" href="' + esc(d.amazon_search) + '" target="_blank" rel="noopener">Search Amazon ↗</a>' + (!state.owner && canComplete(r) ? '<button class="btn" id="doneBtn">✓ Mark received</button>' : '') + (r.status === 'completed' ? '<button class="btn" id="againBtn">↺ Need it again</button>' : '') + '<button class="btn" id="editBtn">Edit</button></div>' + '<div id="reopenSlot"></div>';
       view.innerHTML = '<a class="back" href="#">← All requests</a>' +
         '<div class="panel" id="reqPanel"><div class="d-head"><div><h2>' + esc(r.item_name) + '</h2></div>' + pill(r.status) + '</div>' + dl +
         (r.director_note ? '<div class="dnote"><b>DIRECTOR NOTE</b>' + esc(r.director_note) + '</div>' : '') + buy + src + '</div>' +
