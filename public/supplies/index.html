@@ -161,14 +161,15 @@
   .toolbar input[type=search]{flex:1;min-width:200px;width:auto;background:var(--navy);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:9px 12px;font-size:14.5px;}
   .filters{margin:10px 0 14px;}
 
-  .srow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:12px 14px;}
+  .srow{display:grid;grid-template-columns:132px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:12px 14px;}
   .srow:hover{border-color:var(--line-blue);}
+  .srow .st-col{display:flex;align-items:center;}
   .srow h3{margin:0 0 4px;font-size:15.5px;font-weight:600;line-height:1.35;}
   .srow h3 a{color:var(--paper);text-decoration:none;}
   .srow h3 a:hover{color:var(--cyan);}
   .srow .right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
   .srow .note{font-size:13px;color:var(--ink-muted);margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;}
-  @media (max-width:600px){ .srow{grid-template-columns:1fr;} .srow .right{justify-content:flex-start;} }
+  @media (max-width:600px){ .srow{grid-template-columns:1fr;gap:8px;} .srow .right{justify-content:flex-start;} }
   .buy{font-size:12.5px;font-weight:600;text-decoration:none;padding:5px 10px;border-radius:var(--radius);border:1px solid var(--line-blue);color:var(--ink);white-space:nowrap;background:var(--navy);}
   .buy:hover{border-color:var(--cyan);color:var(--cyan);}
   .buy.has{border-color:var(--amber);color:var(--amber);}
@@ -404,9 +405,9 @@
         if(r.quantity) bits.push('Qty: ' + esc(r.quantity));
         if(r.purpose) bits.push(esc(r.purpose));
         bits.push((r.requested_by ? esc(r.requested_by) : 'Unknown') + ', ' + esc(fmtDate(r.date_added)));
-        return '<div class="srow"><div><h3><a href="#' + r.id + '">' + esc(r.item_name) + '</a></h3><div class="meta">' + bits.join(' · ') + '</div>' +
+        return '<div class="srow"><div class="st-col">' + pill(r.status) + '</div><div><h3><a href="#' + r.id + '">' + esc(r.item_name) + '</a></h3><div class="meta">' + bits.join(' · ') + '</div>' +
           (r.notes ? '<div class="note">' + esc(r.notes) + '</div>' : '') + '</div>' +
-          '<div class="right">' + buyButton(r) + (state.owner ? quickStatus(r) : (canComplete(r) ? '<button class="buy done-btn" data-done="' + r.id + '">✓ Mark completed</button>' : '') + (r.status === 'completed' ? '<button class="buy again-btn" data-again="' + r.id + '">↺ Need again</button>' : '') + pill(r.status)) + '</div></div>';
+          '<div class="right">' + buyButton(r) + (state.owner ? quickStatus(r) : (canComplete(r) ? '<button class="buy done-btn" data-done="' + r.id + '">✓ Mark completed</button>' : '') + (r.status === 'completed' ? '<button class="buy again-btn" data-again="' + r.id + '">↺ Need again</button>' : '')) + '</div></div>';
       }).join('') + '</div>' + (rows.length > shown.length ? '<button class="btn more" id="moreBtn">Show more (' + (rows.length - shown.length) + ' left)</button>' : '');
     }
     var hadFocus = document.activeElement && document.activeElement.id === 'q';
