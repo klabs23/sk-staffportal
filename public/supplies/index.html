@@ -277,7 +277,7 @@
   ];
   var NAME_KEY = 'staffportal:name', OWNER_KEY = 'staffportal:ownerKey', FILTER_KEY = 'staffportal:supplyFilter';
   var view = document.getElementById('view');
-  var state = { owner:false, rows:[], filter: lsGet(FILTER_KEY) || 'open', q:'', limit:60 };
+  var state = { owner:false, rows:[], filter: (lsGet(FILTER_KEY) === 'ordered' ? 'open' : lsGet(FILTER_KEY)) || 'open', q:'', limit:60 };
 
   function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
   function lsSet(k,v){ try{ if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){} }
@@ -320,8 +320,8 @@
 
   /* ---------- list ---------- */
   var FILTERS = [
-    {key:'open', label:'Needed', test:function(r){ return isOpen(r.status); }},
-    {key:'ordered', label:'Ordered', test:function(r){ return r.status === 'ordered'; }},
+    // Ordered items stay on the Needed list (with an Ordered status) until someone marks them completed.
+    {key:'open', label:'Needed', test:function(r){ return isOpen(r.status) || r.status === 'ordered'; }},
     {key:'completed', label:'Completed', test:function(r){ return r.status === 'completed'; }},
     {key:'not', label:'Not purchasing', test:function(r){ return r.status === 'not_purchasing' || r.status === 'return'; }},
     {key:'all', label:'All', test:function(){ return true; }}
