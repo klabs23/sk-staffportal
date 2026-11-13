@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Steamoji · Staff Onboarding</title>
+<link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="theme-color" content="#1F5FBF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#F4F8FD; --navy:#FFFFFF; --navy-card:#FFFFFF; --navy-card-hi:#EDF3FB;
+    --line-blue:#A9C1E0; --line-blue-soft:#D6E3F2; --paper:#0B2A55; --ink:#172B45;
+    --ink-muted:#5B6F8A; --amber:#1F5FBF; --coral:#CB3732; --cyan:#1769C9; --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background-color:var(--navy-deep);
+    background-image:linear-gradient(rgba(31,95,191,0.056) 1px, transparent 1px),linear-gradient(90deg, rgba(31,95,191,0.056) 1px, transparent 1px);
+    background-size:28px 28px;color:var(--ink);font-family:'Inter',system-ui,sans-serif;min-height:100vh;padding:24px 16px 80px;
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important;} }
+  .wrap{max-width:900px;margin:0 auto;}
+  body.locked .wrap{display:none;}
+  a{color:var(--cyan);}
+  button{font:inherit;color:inherit;}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+
+  .topbar{display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-muted);margin-bottom:14px;flex-wrap:wrap;}
+  .topbar a{color:var(--ink-muted);text-decoration:none;}
+  .topbar a:hover,.topbar .link:hover{color:var(--cyan);}
+  .topbar .link{cursor:pointer;background:none;border:none;padding:0;font-family:inherit;font-size:inherit;color:var(--ink-muted);}
+  .topbar .spacer{flex:1;}
+
+  h1{margin:0 0 4px;}
+  .sub{color:var(--ink-muted);font-size:14.5px;line-height:1.5;margin:0 0 22px;max-width:600px;}
+
+  /* role tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;border-bottom:1px solid var(--line-blue-soft);}
+  .tab{background:none;border:none;border-bottom:3px solid transparent;padding:10px 14px 9px;margin-bottom:-1px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--ink-muted);}
+  .tab:hover{color:var(--paper);}
+  .tab[aria-selected="true"]{color:var(--amber);border-bottom-color:var(--amber);}
+  .tab .count{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;margin-left:6px;color:var(--ink-muted);}
+
+  .group{margin:0 0 26px;}
+  .group h2{font-size:15px !important;color:var(--paper);margin:0 0 4px;}
+  .group .gsub{font-size:13px;color:var(--ink-muted);margin:0 0 12px;line-height:1.5;}
+
+  .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+  .doc{display:flex;flex-direction:column;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 2px rgba(11,42,85,.05);transition:border-color .15s, transform .1s;}
+  .doc:hover{border-color:var(--amber);transform:translateY(-2px);}
+  .doc .thumb{display:block;aspect-ratio:4/3;background:#EDF3FB;border-bottom:1px solid var(--line-blue-soft);overflow:hidden;}
+  .doc .thumb img{width:100%;height:100%;object-fit:cover;object-position:top;display:block;}
+  .doc .body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1;}
+  .doc h3{font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:14.5px;margin:0;color:var(--paper);line-height:1.35;}
+  .doc p{font-size:12.5px;color:var(--ink-muted);line-height:1.45;margin:0;flex:1;}
+  .doc .meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-muted);}
+  .doc .actions{display:flex;gap:12px;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .doc .actions a{color:var(--amber);text-decoration:none;font-weight:600;}
+  .doc .actions a:hover{text-decoration:underline;}
+
+  .thumb.is-video{position:relative;}
+  .thumb.is-video::after{content:'▶';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(11,42,85,.82);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;padding-left:4px;}
+  .v-overlay{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;background:rgba(11,42,85,.75);padding:20px;}
+  .v-overlay.open{display:flex;}
+  .v-panel{width:100%;max-width:960px;background:#0B2A55;border-radius:var(--radius);padding:12px;box-shadow:0 20px 50px rgba(0,0,0,.35);}
+  .v-head{display:flex;align-items:center;gap:12px;padding:2px 4px 10px;}
+  .v-head h2{flex:1;margin:0;color:#fff;font-size:15px !important;}
+  .v-close{width:34px;height:34px;border:1px solid rgba(255,255,255,.3);background:none;color:#fff;border-radius:var(--radius);cursor:pointer;}
+  .v-close:hover{background:rgba(255,255,255,.1);}
+  .v-panel video{display:block;width:100%;max-height:75vh;background:#000;}
+
+  .empty{background:var(--navy-card);border:1px dashed var(--line-blue);border-radius:var(--radius);padding:28px 22px;text-align:center;color:var(--ink-muted);font-size:14px;line-height:1.55;}
+  .empty strong{display:block;color:var(--paper);font-size:15px;margin-bottom:4px;}
+
+  /* Auth gate (same as other portal pages) */
+  .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background-color:var(--navy-deep);background-image:linear-gradient(rgba(31,95,191,0.056) 1px, transparent 1px),linear-gradient(90deg, rgba(31,95,191,0.056) 1px, transparent 1px);background-size:28px 28px;padding:20px;}
+  body:not(.locked) .auth-gate{display:none;}
+  .auth-card{width:100%;max-width:360px;background:var(--navy-card);border:1px solid var(--line-blue-soft);border-radius:var(--radius);padding:28px 26px;}
+  .auth-card h2{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0 0 8px;font-weight:600;color:var(--paper);}
+  .auth-card p{color:var(--ink-muted);font-size:13px;line-height:1.5;margin:0 0 20px;}
+  .auth-card input[type=password]{width:100%;background:var(--navy);border:1px solid var(--line-blue-soft);color:var(--ink);border-radius:var(--radius);padding:11px 12px;font-size:14px;margin-bottom:12px;}
+  .auth-remember{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12.5px;color:var(--ink-muted);}
+  .auth-submit{width:100%;background:var(--amber);color:var(--navy-deep);border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;padding:12px;border-radius:var(--radius);cursor:pointer;}
+  .auth-error{display:none;color:var(--coral);font-size:12.5px;margin-top:12px;}
+</style>
+<link rel="stylesheet" href="../brand.css">
+</head>
+<body class="locked">
+<script src="../auth.js"></script>
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <img class="brand-logo auth" src="../logo.png" alt=""><p class="brand-name auth">Steamoji Kirkland</p>
+    <h2>Enter passphrase</h2>
+    <p>Staff access only. Ask your director for the current passphrase.</p>
+    <input type="password" id="authPassword" placeholder="Passphrase" autocomplete="off">
+    <label class="auth-remember"><input type="checkbox" id="authRemember" checked> Remember this device</label>
+    <button class="auth-submit" id="authSubmit">Enter</button>
+    <div class="auth-error" id="authError">That passphrase didn't match. Try again.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="../" title="Back to the Staff Portal"><img class="brand-logo" src="../logo.png" alt=""><span class="brand-text"><span class="brand-name">Steamoji Kirkland</span><span class="brand-sub">← Staff Portal</span></span></a>
+    <span class="spacer"></span>
+    <span id="directorArea"></span>
+    <button class="link" id="lockLink">🔒 Lock</button>
+  </div>
+
+  <h1>Staff Onboarding</h1>
+  <p class="sub">Training materials for new team members, by role. Pick your role and work through the materials in order.</p>
+
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <main id="panel" role="tabpanel"></main>
+</div>
+
+<div class="v-overlay" id="vOverlay" role="dialog" aria-modal="true" aria-labelledby="vTitle">
+  <div class="v-panel">
+    <div class="v-head"><h2 id="vTitle"></h2><button class="v-close" id="vClose" aria-label="Close video">✕</button></div>
+    <video id="vPlayer" controls controlsList="nodownload" disablePictureInPicture playsinline oncontextmenu="return false;"></video>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* Onboarding materials by role.
+     To add a material: drop the file in onboarding/docs/, a preview image in
+     onboarding/thumbs/ (optional), and add an entry below. */
+  var ROLES = [
+    { key:'facilitator', label:'Facilitator', groups:[
+      { title:'Training', sub:'Start here. Covers the Steamoji story, your role as a facilitator, directed sessions, parent videos and trials.', docs:[
+        { title:'Facilitator Training Guide', desc:'An introduction to Steamoji and everything you need to lead sessions, plus checklists and a training task.',
+          file:'facilitator-training-guide.pdf', thumb:'facilitator-training-guide.jpg', meta:'PDF · 38 pages' }
+      ]},
+      { title:'Curriculum: Journey to Master Maker', sub:'The mission path students follow in each age group, from the first level to the Capstone Project.', docs:[
+        { title:'Journey to Master Maker: Ages 6–8', desc:'Mission path for our youngest makers, including the Deep Dive options.',
+          file:'journey-to-master-maker-ages-6-8.pdf', thumb:'journey-to-master-maker-ages-6-8.jpg', meta:'PDF · 1 page' },
+        { title:'Journey to Master Maker: Ages 9–12', desc:'Mission path for ages 9–12, including the Deep Dive options.',
+          file:'journey-to-master-maker-ages-9-12.pdf', thumb:'journey-to-master-maker-ages-9-12.jpg', meta:'PDF · 1 page' },
+        { title:'Journey to Master Maker: Ages 13+', desc:'Curiosity, Resilience, Problem Solving and Adaptability levels leading to the Capstone Project.',
+          file:'journey-to-master-maker-ages-13plus.png', thumb:'journey-to-master-maker-ages-13plus.jpg', meta:'Image' }
+      ]}
+    ]},
+    { key:'sales', label:'Sales', groups:[
+      { title:'Training: Phase 1', sub:'Watch the video first, then keep the playbook slides handy as a reference.', docs:[
+        { title:'Steamoji Sales Phase 1 (Video)', desc:'Walkthrough of the Phase 1 sales process, including the CRM workflow and booking free trials.',
+          file:'sales-training-video-phase-1.mp4', thumb:'sales-training-video-phase-1.jpg', meta:'Video · 7 min', video:true },
+        { title:'Phase 1 Sales Playbook', desc:'The slides that go with the video: the Phase 1 sales process step by step.',
+          file:'sales-playbook-phase-1.pdf', thumb:'sales-playbook-phase-1.jpg', meta:'PDF · 14 slides' }
+      ]},
+      { title:'Tools', sub:'Use these on every lead.', docs:[
+        { title:'Lead Qualification Checklist: Camps & Memberships', desc:'How to handle camp leads, and how to check if a membership lead is qualified: age, location, commute and background.',
+          file:'lead-qualification-checklist.pdf', thumb:'lead-qualification-checklist.jpg', meta:'PDF · 2 pages' }
+      ]}
+    ]},
+    { key:'academy-manager', label:'Academy Manager', groups:[] }
+  ];
+
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function countDocs(r){ return r.groups.reduce(function(n,g){ return n + g.docs.length; }, 0); }
+
+  function currentKey(){
+    var h = (location.hash || '').slice(1);
+    return ROLES.some(function(r){ return r.key === h; }) ? h : ROLES[0].key;
+  }
+
+  function render(){
+    var key = currentKey();
+    document.getElementById('tabs').innerHTML = ROLES.map(function(r){
+      var n = countDocs(r);
+      return '<button class="tab" role="tab" data-key="' + r.key + '" aria-selected="' + (r.key === key) + '">' +
+        esc(r.label) + (n ? '<span class="count">' + n + '</span>' : '') + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){
+      b.onclick = function(){ history.replaceState(null, '', '#' + b.dataset.key); render(); };
+    });
+
+    var role = ROLES.filter(function(r){ return r.key === key; })[0];
+    var panel = document.getElementById('panel');
+    if(!countDocs(role)){
+      panel.innerHTML = '<div class="empty"><strong>' + esc(role.label) + ' onboarding is coming soon</strong>' +
+        'Materials for this role will show up here once they are added.</div>';
+      return;
+    }
+    panel.innerHTML = role.groups.map(function(g){
+      return '<section class="group"><h2>' + esc(g.title) + '</h2>' + (g.sub ? '<p class="gsub">' + esc(g.sub) + '</p>' : '') +
+        '<div class="docs">' + g.docs.map(function(d){
+          var href = 'docs/' + encodeURIComponent(d.file);
+          var attrs = d.video ? ' data-video="' + href + '" data-title="' + esc(d.title) + '"' : ' target="_blank" rel="noopener"';
+          return '<article class="doc">' +
+            '<a class="thumb' + (d.video ? ' is-video' : '') + '" href="' + href + '"' + attrs + ' aria-label="' + (d.video ? 'Play ' : 'Open ') + esc(d.title) + '">' +
+              (d.thumb ? '<img src="thumbs/' + encodeURIComponent(d.thumb) + '" alt="" loading="lazy">' : '') + '</a>' +
+            '<div class="body"><h3>' + esc(d.title) + '</h3><p>' + esc(d.desc) + '</p>' +
+            '<span class="meta">' + esc(d.meta) + '</span>' +
+            '<div class="actions"><a href="' + href + '"' + attrs + '>' + (d.video ? 'Play ▶' : 'Open ↗') + '</a></div>' +
+            '</div></article>';
+        }).join('') + '</div></section>';
+    }).join('');
+    Array.prototype.forEach.call(panel.querySelectorAll('[data-video]'), function(a){
+      a.onclick = function(e){ e.preventDefault(); openVideo(a.dataset.video, a.dataset.title); };
+    });
+  }
+
+  /* Video player overlay (no download button) */
+  var ov = document.getElementById('vOverlay'), vid = document.getElementById('vPlayer');
+  function openVideo(src, title){
+    document.getElementById('vTitle').textContent = title;
+    vid.src = src; ov.classList.add('open'); document.body.style.overflow = 'hidden';
+    vid.play().catch(function(){});
+    document.getElementById('vClose').focus();
+  }
+  function closeVideo(){
+    vid.pause(); vid.removeAttribute('src'); vid.load();
+    ov.classList.remove('open'); document.body.style.overflow = '';
+  }
+  document.getElementById('vClose').onclick = closeVideo;
+  ov.addEventListener('click', function(e){ if(e.target === ov) closeVideo(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && ov.classList.contains('open')) closeVideo(); });
+
+  window.addEventListener('hashchange', render);
+  render();
+})();
+</script>
+</body>
+</html>
