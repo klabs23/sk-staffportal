@@ -63,7 +63,8 @@
   .doc .actions a{color:var(--amber);text-decoration:none;font-weight:600;}
   .doc .actions a:hover{text-decoration:underline;}
 
-  .thumb.is-video{position:relative;}
+  .thumb.is-video{position:relative;background:#fff;}
+  .doc .thumb.is-video img{object-fit:contain;object-position:center;}
   .thumb.is-video::after{content:'▶';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(11,42,85,.82);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;padding-left:4px;}
   .v-overlay{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;background:rgba(11,42,85,.75);padding:20px;}
   .v-overlay.open{display:flex;}
@@ -134,7 +135,9 @@
      onboarding/thumbs/ (optional), and add an entry below. */
   var ROLES = [
     { key:'facilitator', label:'Facilitator', groups:[
-      { title:'Training', sub:'Start here. Covers the Steamoji story, your role as a facilitator, directed sessions, parent videos and trials.', docs:[
+      { title:'Training', sub:'Start here: watch the video, then read the guide. Covers the Steamoji story, your role as a facilitator, directed sessions, parent videos and trials.', docs:[
+        { title:'Steamoji Kirkland Facilitator Training (Video)', desc:'Welcome to the team: our mission, the Steamoji Kirkland academy and what it means to be a facilitator.',
+          file:'facilitator-training-video.mp4', thumb:'facilitator-training-video.jpg', meta:'Video · 9 min', video:true },
         { title:'Facilitator Training Guide', desc:'An introduction to Steamoji and everything you need to lead sessions, plus checklists and a training task.',
           file:'facilitator-training-guide.pdf', thumb:'facilitator-training-guide.jpg', meta:'PDF · 38 pages' }
       ]},
